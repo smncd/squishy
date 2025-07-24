@@ -1,5 +1,5 @@
 NAME := squishy
-VERSION := 0.4.0-dev.2
+VERSION := $(shell cat .version)
 GOPATH := $(shell go env GOPATH)
 
 define build
@@ -12,7 +12,10 @@ install-dev-deps:
 	go mod download
 	go install github.com/air-verse/air@latest
 
-dev:
+generate:
+	go generate ./...
+
+dev: generate
 	$(info Starting air dev process)
 	$(GOPATH)/bin/air
 
@@ -29,7 +32,7 @@ build-linux-amd64:
 build-linux-arm64:
 	$(call build,linux,arm64)
 
-build-all: cleanup build-linux-arm64 build-linux-amd64
+build-all: generate cleanup build-linux-arm64 build-linux-amd64
 
 create-release: build-all
 	glab release create v$(VERSION)

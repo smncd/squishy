@@ -1,4 +1,5 @@
 .air/
+_version
 bin/
 air.log
 squishy.yaml

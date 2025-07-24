@@ -1,5 +1,5 @@
 NAME := squishy
-VERSION := 0.4.0-beta.1
+VERSION := 0.4.0-dev.1
 GOPATH := $(shell go env GOPATH)
 
 define build

@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -40,18 +41,18 @@ func (s *SquishyFile) Load() error {
 
 	err := loadFromFile(s.FilePath, &s)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to load file: %w", err)
 	}
 
 	validate := validator.New()
 	err = validate.Struct(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("validation failed: %w", err)
 	}
 
 	err = s.StoreFileModTime()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to store file modification time: %w", err)
 	}
 
 	return nil
@@ -60,7 +61,7 @@ func (s *SquishyFile) Load() error {
 func (s *SquishyFile) GetFileModTime() (*time.Time, error) {
 	fileInfo, err := os.Stat(s.FilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
 	modTime := fileInfo.ModTime()
@@ -71,7 +72,7 @@ func (s *SquishyFile) GetFileModTime() (*time.Time, error) {
 func (s *SquishyFile) StoreFileModTime() error {
 	modTime, err := s.GetFileModTime()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get file modification time: %w", err)
 	}
 
 	s.meta.modifiedTime = *modTime
@@ -82,7 +83,7 @@ func (s *SquishyFile) StoreFileModTime() error {
 func (s *SquishyFile) FileUpdatedSinceLastLoad() (bool, error) {
 	modTime, err := s.GetFileModTime()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to get file modification time: %w", err)
 	}
 
 	return modTime.Compare(s.meta.modifiedTime) != 0, nil
@@ -91,7 +92,7 @@ func (s *SquishyFile) FileUpdatedSinceLastLoad() (bool, error) {
 func (s *SquishyFile) RefetchRoutes() error {
 	updated, err := s.FileUpdatedSinceLastLoad()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to check if file was updated since last load: %w", err)
 	}
 
 	if updated {
@@ -100,7 +101,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 
 		err := loadFromFile(s.FilePath, &newData)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get file modification time: %w", err)
 		}
 
 		s.Routes = newData.Routes
@@ -168,12 +169,12 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 func loadFromFile(filePath string, data any) error {
 	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read file (%s): %w", filePath, err)
 	}
 
 	err = yaml.Unmarshal(yamlFile, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal data: %w", err)
 	}
 
 	return nil

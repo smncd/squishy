@@ -24,7 +24,7 @@ run:
 	go run cmd/main.go
 
 cleanup:
-	rm ./bin/* -r
+	rm ./bin/* -rf
 
 build-linux-amd64:
 	$(call build,linux,amd64)

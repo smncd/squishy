@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
 	"gitlab.com/smncd/squishy/internal/server"
@@ -18,7 +18,9 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	router := server.New(s)
+	server := server.New(s)
 
-	router.Run(fmt.Sprintf("%v:%v", s.Config.Host, s.Config.Port))
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("listen: %s\n", err)
+	}
 }

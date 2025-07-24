@@ -1,13 +1,14 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/smncd/squishy/internal/filesystem"
 )
 
-func New(s *filesystem.SquishyFile) *gin.Engine {
+func New(s *filesystem.SquishyFile) *http.Server {
 	router := gin.Default()
 
 	router.GET("/*path", func(c *gin.Context) {
@@ -26,5 +27,10 @@ func New(s *filesystem.SquishyFile) *gin.Engine {
 		c.Redirect(http.StatusPermanentRedirect, reply)
 	})
 
-	return router
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", s.Config.Host, s.Config.Port),
+		Handler: router.Handler(),
+	}
+
+	return srv
 }

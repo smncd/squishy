@@ -20,12 +20,12 @@ func main() {
 
 	server := server.New(s)
 
-	err = filesystem.LoadVersion()
+	err = filesystem.LoadVersionString()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	log.Printf("Starting Squishy v%s...", filesystem.Version)
+	log.Printf("Starting Squishy v%s...", filesystem.VersionString)
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)

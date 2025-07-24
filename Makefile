@@ -20,14 +20,17 @@ run:
 	$(info Running $(NAME))
 	go run cmd/main.go
 
+cleanup:
+	rm ./bin/* -r
+
 build-linux-amd64:
 	$(call build,linux,amd64)
 
 build-linux-arm64:
 	$(call build,linux,arm64)
 
-build-all: build-linux-arm64 build-linux-amd64
+build-all: cleanup build-linux-arm64 build-linux-amd64
 
-create-release:
-	glab release create $(NAME)-v$(VERSION) --notes "$(NAME) $(VERSION)"
-    glab release upload $(NAME)-v$(VERSION) ./bin/*
+create-release: build-all
+	glab release create $(NAME)-v$(VERSION)
+	glab release upload $(NAME)-v$(VERSION) ./bin/*

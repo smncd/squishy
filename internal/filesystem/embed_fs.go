@@ -6,9 +6,9 @@ import (
 	"io/fs"
 )
 
-//go:generate sh -c "cp ../../.version ./_version"
+//go:generate sh -c "cp ../../.version ./embed/_version"
 
-//go:embed _version
+//go:embed embed/*
 var embedFS embed.FS
 
 var VersionString string

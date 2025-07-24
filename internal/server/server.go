@@ -13,7 +13,7 @@ func New(s *filesystem.SquishyFile) *gin.Engine {
 	router.GET("/*path", func(c *gin.Context) {
 		path := c.Param("path")
 
-		err := s.RefreshFile()
+		err := s.RefetchFile()
 		if err != nil {
 			c.String(500, "error loading squishyfile")
 		}

@@ -89,7 +89,7 @@ func (s *SquishyFile) FileUpdatedSinceLastLoad() (bool, error) {
 	return modTime.Compare(s.meta.modifiedTime) != 0, nil
 }
 
-func (s *SquishyFile) RefreshFile() error {
+func (s *SquishyFile) RefetchFile() error {
 	updated, err := s.FileUpdatedSinceLastLoad()
 	if err != nil {
 		return err

@@ -15,8 +15,9 @@ type meta struct {
 }
 
 type config struct {
-	Host string `yaml:"host" json:"host" validate:"required"`
-	Port string `yaml:"port" json:"port" validate:"required"`
+	Debug bool   `yaml:"debug" json:"debug"`
+	Host  string `yaml:"host" json:"host" validate:"required"`
+	Port  string `yaml:"port" json:"port" validate:"required"`
 }
 
 // The SquishyFile holds the main configuration data for the project,
@@ -31,8 +32,11 @@ type SquishyFile struct {
 
 // Loads SquishyFile from filesystem
 func (s *SquishyFile) Load() error {
-	s.Config.Host = "localhost"
-	s.Config.Port = "1394"
+	s.Config = config{
+		Debug: false,
+		Host:  "localhost",
+		Port:  "1394",
+	}
 
 	yamlFile, err := os.ReadFile(s.FilePath)
 	if err != nil {

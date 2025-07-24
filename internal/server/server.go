@@ -9,6 +9,10 @@ import (
 )
 
 func New(s *filesystem.SquishyFile) *http.Server {
+	if !s.Config.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
 
 	router.GET("/*path", func(c *gin.Context) {

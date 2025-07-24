@@ -28,8 +28,6 @@ build-linux-arm64:
 
 build-all: build-linux-arm64 build-linux-amd64
 
-create-release-tag:
-	git tag $(NAME)-v$(VERSION) -m "$(NAME) $(VERSION)"
-
-push-release-tag:
-	git push origin $(NAME)-v$(VERSION)
+create-release:
+	glab release create $(NAME)-v$(VERSION) --notes "$(NAME) $(VERSION)"
+    glab release upload $(NAME)-v$(VERSION) ./bin/*

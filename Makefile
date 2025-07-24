@@ -6,7 +6,7 @@ define build
 	CGO_ENABLED=0 GOOS=$2 GOARCH=$1 go build -v -o ./bin/$(NAME)-$(1)-$(2) -ldflags "-w -s" ./cmd/main.go
 endef
 
-install-deps:
+install-dev-deps:
 	$(info Installing dependencies...)
 	go mod download
 	go install github.com/air-verse/air@latest

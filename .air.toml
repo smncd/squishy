@@ -5,7 +5,7 @@ tmp_dir = ".air"
   cmd = "go build -o ./.air/main ./cmd/main.go"
   bin = ".air/main"
   full_bin = "APP_ENV=dev APP_USER=air ./.air/main"
-  include_ext = ["go", "tpl", "tmpl", "html", "css", "js", "env", "yaml"]
+  include_ext = ["go", "tpl", "tmpl", "html", "css", "js", "env"]
   exclude_dir = [".air", "assets", "vendor", "bin", "build", "deploy"]
   include_dir = []
   exclude_regex = ["_test.go"]

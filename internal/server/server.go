@@ -18,9 +18,14 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	router.GET("/*path", func(c *gin.Context) {
 		path := c.Param("path")
 
-		err := s.RefetchFile()
+		err := s.RefetchRoutes()
 		if err != nil {
-			c.String(500, "error loading squishyfile")
+			if s.Config.Debug {
+				c.String(500, err.Error())
+			} else {
+				c.String(500, "error loading squishyfile")
+			}
+
 		}
 
 		reply, ok := s.LookupRoutePath(path)

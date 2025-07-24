@@ -38,12 +38,7 @@ func (s *SquishyFile) Load() error {
 		Port:  "1394",
 	}
 
-	yamlFile, err := os.ReadFile(s.FilePath)
-	if err != nil {
-		return err
-	}
-
-	err = yaml.Unmarshal(yamlFile, s)
+	err := loadFromFile(s.FilePath, &s)
 	if err != nil {
 		return err
 	}
@@ -93,15 +88,27 @@ func (s *SquishyFile) FileUpdatedSinceLastLoad() (bool, error) {
 	return modTime.Compare(s.meta.modifiedTime) != 0, nil
 }
 
-func (s *SquishyFile) RefetchFile() error {
+func (s *SquishyFile) RefetchRoutes() error {
 	updated, err := s.FileUpdatedSinceLastLoad()
 	if err != nil {
 		return err
 	}
 
 	if updated {
+		var newData SquishyFile
 		log.Println("squishyfile has new mod time, loading again...")
-		s.Load()
+
+		err := loadFromFile(s.FilePath, &newData)
+		if err != nil {
+			return err
+		}
+
+		s.Routes = newData.Routes
+
+		err = s.StoreFileModTime()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -155,4 +162,19 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 
 	return reply, true
 
+}
+
+// Loads SquishyFile from filesystem.
+func loadFromFile(filePath string, data any) error {
+	yamlFile, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(yamlFile, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

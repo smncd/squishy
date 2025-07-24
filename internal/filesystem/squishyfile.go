@@ -1,0 +1,142 @@
+package filesystem
+
+import (
+	"log"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/go-playground/validator/v10"
+	"gopkg.in/yaml.v3"
+)
+
+type meta struct {
+	modifiedTime time.Time
+}
+
+type config struct {
+	Host string `yaml:"host" json:"host" validate:"required"`
+	Port string `yaml:"port" json:"port" validate:"required"`
+}
+
+// The SquishyFile holds the main configuration data for the project,
+// including settings as well as all the available routes
+type SquishyFile struct {
+	meta meta
+
+	FilePath string         `validate:"required"`
+	Config   config         `yaml:"config" json:"config"`
+	Routes   map[string]any `yaml:"routes" json:"routes" validate:"required"`
+}
+
+// Loads SquishyFile from filesystem
+func (s *SquishyFile) Load() error {
+	s.Config.Host = "localhost"
+	s.Config.Port = "1394"
+
+	yamlFile, err := os.ReadFile(s.FilePath)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(yamlFile, s)
+	if err != nil {
+		return err
+	}
+
+	validate := validator.New()
+	err = validate.Struct(s)
+	if err != nil {
+		return err
+	}
+
+	err = s.StoreFileModTime()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SquishyFile) GetFileModTime() (*time.Time, error) {
+	fileInfo, err := os.Stat(s.FilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	modTime := fileInfo.ModTime()
+
+	return &modTime, nil
+}
+
+func (s *SquishyFile) StoreFileModTime() error {
+	modTime, err := s.GetFileModTime()
+	if err != nil {
+		return err
+	}
+
+	s.meta.modifiedTime = *modTime
+
+	return nil
+}
+
+func (s *SquishyFile) FileUpdatedSinceLastLoad() (bool, error) {
+	modTime, err := s.GetFileModTime()
+	if err != nil {
+		return false, err
+	}
+
+	return modTime.Compare(s.meta.modifiedTime) != 0, nil
+}
+
+func (s *SquishyFile) RefreshFile() error {
+	updated, err := s.FileUpdatedSinceLastLoad()
+	if err != nil {
+		return err
+	}
+
+	if updated {
+		log.Println("squishyfile has new mod time, loading again...")
+		s.Load()
+	}
+
+	return nil
+}
+
+func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
+	var keys []string
+
+	for part := range strings.SplitSeq(strings.ReplaceAll(path, ":", "/"), "/") {
+		trimmedPart := strings.TrimSpace(part)
+		if trimmedPart == "" {
+			continue
+		}
+		keys = append(keys, trimmedPart)
+	}
+
+	var result any = s.Routes
+
+	for i, key := range keys {
+		currentLevel, ok := result.(map[string]any)
+		if !ok {
+			return "", false
+		}
+
+		result, ok = currentLevel[key]
+		if !ok {
+			return "", false
+		}
+
+		if i == len(keys)-1 {
+			break
+		}
+	}
+
+	reply, ok := result.(string)
+	if !ok {
+		return "", false
+	}
+
+	return reply, true
+
+}

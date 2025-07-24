@@ -1,4 +1,0 @@
-routes:
-    nested:
-        route: https://example.com/nested
-    top-level: https://example.com/top

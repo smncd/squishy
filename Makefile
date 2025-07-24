@@ -32,5 +32,5 @@ build-linux-arm64:
 build-all: cleanup build-linux-arm64 build-linux-amd64
 
 create-release: build-all
-	glab release create $(NAME)-v$(VERSION)
-	glab release upload $(NAME)-v$(VERSION) ./bin/*
+	glab release create v$(VERSION)
+	glab release upload v$(VERSION) ./bin/*

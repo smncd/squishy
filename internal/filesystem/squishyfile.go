@@ -104,6 +104,7 @@ func (s *SquishyFile) RefetchFile() error {
 }
 
 func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
+	indexKey := "_index"
 	var keys []string
 
 	for part := range strings.SplitSeq(strings.ReplaceAll(path, ":", "/"), "/") {
@@ -112,6 +113,10 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 			continue
 		}
 		keys = append(keys, trimmedPart)
+	}
+
+	if len(keys) == 0 {
+		keys = append(keys, indexKey)
 	}
 
 	var result any = s.Routes
@@ -128,6 +133,13 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 		}
 
 		if i == len(keys)-1 {
+			if level, ok := result.(map[string]any); ok {
+				result, ok = level[indexKey]
+				if !ok {
+					return "", false
+				}
+			}
+
 			break
 		}
 	}

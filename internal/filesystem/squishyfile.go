@@ -12,7 +12,8 @@ import (
 )
 
 type meta struct {
-	modifiedTime time.Time
+	filePath     string    `validate:"required"`
+	modifiedTime time.Time `validate:"required"`
 }
 
 type config struct {
@@ -26,9 +27,12 @@ type config struct {
 type SquishyFile struct {
 	meta meta
 
-	FilePath string         `validate:"required"`
-	Config   config         `yaml:"config" json:"config"`
-	Routes   map[string]any `yaml:"routes" json:"routes" validate:"required"`
+	Config config         `yaml:"config" json:"config"`
+	Routes map[string]any `yaml:"routes" json:"routes" validate:"required"`
+}
+
+func (s *SquishyFile) SetFilePath(filePath string) {
+	s.meta.filePath = filePath
 }
 
 // Loads SquishyFile from filesystem
@@ -39,7 +43,7 @@ func (s *SquishyFile) Load() error {
 		Port:  "1394",
 	}
 
-	err := loadFromFile(s.FilePath, &s)
+	err := loadFromFile(s.meta.filePath, &s)
 	if err != nil {
 		return fmt.Errorf("failed to load file: %w", err)
 	}
@@ -59,7 +63,7 @@ func (s *SquishyFile) Load() error {
 }
 
 func (s *SquishyFile) GetFileModTime() (*time.Time, error) {
-	fileInfo, err := os.Stat(s.FilePath)
+	fileInfo, err := os.Stat(s.meta.filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
@@ -99,7 +103,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 		var newData SquishyFile
 		log.Println("squishyfile has new mod time, loading again...")
 
-		err := loadFromFile(s.FilePath, &newData)
+		err := loadFromFile(s.meta.filePath, &newData)
 		if err != nil {
 			return fmt.Errorf("failed to get file modification time: %w", err)
 		}

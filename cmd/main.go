@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	s := &filesystem.SquishyFile{
-		FilePath: "squishy.yaml",
-	}
+	s := &filesystem.SquishyFile{}
+
+	s.SetFilePath("squishy.yaml")
 
 	err := s.Load()
 	if err != nil {

@@ -42,8 +42,8 @@ config:
 routes:
   _index: https://example.com # Redirects the root path to https://example.com
   hello:
-    _index: https://example.com # Redirects /hello/ to https://example.com
-    there: https://example.com # Redirects /hello/there to https://example.com
+    _index: https://example2.com # Redirects /hello/ to https://example2.com
+    there: https://example3.com # Redirects /hello/there to https://example3.com
 ```
 
 ### Example Configuration File
@@ -59,8 +59,8 @@ config:
 routes:
   _index: https://example.com # The root path redirects to https://example.com
   hello:
-    _index: https://example.com # /hello/ redirects to https://example.com
-    there: https://example.com # /hello/there redirects to https://example.com
+    _index: https://example2.com # /hello/ redirects to https://example2.com
+    there: https://example3.com # /hello/there redirects to https://example3.com
 ```
 
 License and Ownership

@@ -25,12 +25,11 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 		err := s.RefetchRoutes()
 		if err != nil {
+			errorMessage := "error fetching routes"
 			if s.Config.Debug {
-				c.String(500, err.Error())
-			} else {
-				c.String(500, "error loading squishyfile")
+				errorMessage = err.Error()
 			}
-
+			c.String(http.StatusInternalServerError, errorMessage)
 		}
 
 		reply, ok := s.LookupRoutePath(path)

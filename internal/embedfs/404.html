@@ -1,59 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang=en>
 <head>
 	<meta name="robots" content="noindex">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Not found</title>
-	<style>
-		* {
-			box-sizing: border-box;
-			margin: 0;
-		}
-
-		a {
-			color: #21897E;
-		}
-
-		.page {
-			height: 100dvh;
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
-			font-family: system-ui, Roboto, Cantarell, 'Open Sans', sans-serif;
-			background-color: #F7FFF6;
-			color: #260C1A;
-		}
-
-		.main, .footer {
-			padding: 32px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			flex-direction: column;
-			gap: 16px;
-		}
-
-		.main {
-			height: 100%;
-		}
-
-		.main > .title {
-			font-size: 2.5rem;
-		}
-
-		.main > .description {
-			font-size: 1.125rem;
-		}
-	</style>
+	<link rel="icon" href="/static/favicon.svg">
+	<link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="page">
-	<main class="main">
+	<div class="main">
 		<h1 class="title">Not found</h1>
-		<p class="description">The link you've accessed does not exist</p>
-	</main>
-	<footer class="footer">
-		<p>Powered by <a href="https://gitlab.com/smncd/squishy">Squishy</a></p>
-	</footer>
+		<p class="desc">The link you've accessed does not exist</p>
+	</div>
+	<p>Powered by <a href="https://gitlab.com/smncd/squishy">Squishy</a></p>
 </body>
 </html>

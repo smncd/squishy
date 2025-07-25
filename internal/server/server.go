@@ -17,11 +17,13 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 	router := gin.Default()
 
+	router.StaticFS("/static", http.FS(embedfs.FS))
+
 	f := template.Must(template.ParseFS(embedfs.FS, "*.html"))
 	router.SetHTMLTemplate(f)
 
-	router.GET("/*path", func(c *gin.Context) {
-		path := c.Param("path")
+	router.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
 
 		err := s.RefetchRoutes()
 		if err != nil {

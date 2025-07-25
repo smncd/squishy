@@ -1,0 +1,39 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+}
+
+a {
+	color: #21897E;
+}
+
+.page {
+	padding: 32px;
+	height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	font-family: system-ui, Roboto, Cantarell, 'Open Sans', sans-serif;
+	text-align: center;
+	background-color: #F7FFF6;
+	color: #260C1A;
+}
+
+.main, .footer {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.main {
+	height: 100%;
+}
+
+.main > .title {
+	font-size: 2.5rem;
+}
+
+.main > .desc {
+	font-size: 1.125rem;
+}

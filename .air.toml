@@ -2,7 +2,7 @@ root = "."
 tmp_dir = ".air"
 
 [build]
-  cmd = "go build -o ./.air/main ./cmd/main.go"
+  cmd = "make air --no-print-directory"
   bin = ".air/main"
   full_bin = "APP_ENV=dev APP_USER=air ./.air/main"
   include_ext = ["go", "tpl", "tmpl", "html", "css", "js", "env"]
@@ -17,6 +17,7 @@ tmp_dir = ".air"
   send_interrupt = false
   delay = 1000
   kill_delay = 500
+  ldflags = ""
 
 [log]
   time = false

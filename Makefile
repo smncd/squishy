@@ -1,21 +1,22 @@
 NAME := squishy
 VERSION := $(shell cat .version)
 GOPATH := $(shell go env GOPATH)
+LDFLAGS := "-w -s -X main.Version=$(VERSION)"
 
-define build
+define build-bin
 	$(info Building $(NAME) v$(VERSION) with arch $1 for $2)
-	CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -v -o ./bin/$(NAME)-$(1)-$(2)-$(VERSION) -ldflags "-w -s" ./cmd/main.go
+	CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -v -o ./bin/$(NAME)-$(1)-$(2)-$(VERSION) -ldflags $(LDFLAGS) ./cmd/main.go
 endef
+
+air:
+	@go build -o ./.air/main -ldflags $(LDFLAGS) ./cmd/main.go
 
 install-dev-deps:
 	$(info Installing dependencies...)
 	go mod download
 	go install github.com/air-verse/air@latest
 
-generate:
-	go generate ./...
-
-dev: generate
+dev:
 	$(info Starting air dev process)
 	$(GOPATH)/bin/air
 
@@ -27,12 +28,12 @@ cleanup:
 	rm ./bin/* -rf
 
 build-linux-amd64:
-	$(call build,linux,amd64)
+	$(call build-bin,linux,amd64)
 
 build-linux-arm64:
-	$(call build,linux,arm64)
+	$(call build-bin,linux,arm64)
 
-build-all: generate cleanup build-linux-arm64 build-linux-amd64
+build-all: cleanup build-linux-arm64 build-linux-amd64
 
 create-release: build-all
 	glab release create v$(VERSION)

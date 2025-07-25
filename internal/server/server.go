@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gitlab.com/smncd/squishy/internal/embedfs"
 	"gitlab.com/smncd/squishy/internal/filesystem"
 )
 
@@ -16,7 +17,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 	router := gin.Default()
 
-	f := template.Must(template.ParseFS(filesystem.EmbedFS, "embed/*.html"))
+	f := template.Must(template.ParseFS(embedfs.FS, "*.html"))
 	router.SetHTMLTemplate(f)
 
 	router.GET("/*path", func(c *gin.Context) {

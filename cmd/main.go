@@ -8,6 +8,8 @@ import (
 	"gitlab.com/smncd/squishy/internal/server"
 )
 
+var Version string
+
 func main() {
 	s := &filesystem.SquishyFile{}
 
@@ -20,12 +22,7 @@ func main() {
 
 	server := server.New(s)
 
-	err = filesystem.LoadVersionString()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	log.Printf("Starting Squishy v%s...", filesystem.VersionString)
+	log.Printf("Starting Squishy v%s...", Version)
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)

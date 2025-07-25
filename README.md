@@ -1,7 +1,7 @@
 Squishy 🧽
 =======
 
-Squishy is a lightweight link proxy/shortener.
+Squishy is a lightweight link proxy/shortener, configured through a single yaml file. It's intended for simple scenarios as it can (for now) only be configured by editing the config file on the server, and is not suited for multi-user setups.
 
 Installation
 -------------

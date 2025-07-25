@@ -48,4 +48,5 @@ run-linux-arm64:
 
 create-release: build-all
 	glab release create v$(VERSION)
+	git fetch --tags origin
 	glab release upload v$(VERSION) ./bin/*

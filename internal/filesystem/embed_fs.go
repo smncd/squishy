@@ -9,12 +9,12 @@ import (
 //go:generate sh -c "cp ../../.version ./embed/_version"
 
 //go:embed embed/*
-var embedFS embed.FS
+var EmbedFS embed.FS
 
 var VersionString string
 
 func LoadVersionString() error {
-	data, err := fs.ReadFile(embedFS, "_version")
+	data, err := fs.ReadFile(EmbedFS, "embed/_version")
 	if err != nil {
 		return fmt.Errorf("could not read embedded _version file: %w", err)
 	}

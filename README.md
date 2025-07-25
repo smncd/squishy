@@ -17,8 +17,8 @@ chmod +x ./squishy-linux-arm64-0.4.0-dev.4
 ```
 
 Binaries are available for:
-- `linux-amd64`
-- `linux-arm64`
+- [`linux-amd64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.4/downloads/squishy-linux-amd64-0.4.0-dev.4)
+- [`linux-arm64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.4/downloads/squishy-linux-arm64-0.4.0-dev.4)
 
 Configuration
 -------------

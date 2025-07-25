@@ -8,6 +8,11 @@ define build-bin
 	CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -v -o ./bin/$(NAME)-$(1)-$(2)-$(VERSION) -ldflags $(LDFLAGS) ./cmd/main.go
 endef
 
+define run-bin
+	$(info Running $(NAME) v$(VERSION) with arch $1 for $2)
+	./bin/$(NAME)-$(1)-$(2)-$(VERSION)
+endef
+
 air:
 	@go build -o ./.air/main -ldflags $(LDFLAGS) ./cmd/main.go
 
@@ -34,6 +39,12 @@ build-linux-arm64:
 	$(call build-bin,linux,arm64)
 
 build-all: cleanup build-linux-arm64 build-linux-amd64
+
+run-linux-amd64:
+	$(call run-bin,linux,amd64)
+
+run-linux-arm64:
+	$(call run-bin,linux,arm64)
 
 create-release: build-all
 	glab release create v$(VERSION)

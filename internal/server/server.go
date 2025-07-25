@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,9 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	}
 
 	router := gin.Default()
+
+	f := template.Must(template.ParseFS(filesystem.EmbedFS, "embed/*.html"))
+	router.SetHTMLTemplate(f)
 
 	router.GET("/*path", func(c *gin.Context) {
 		path := c.Param("path")
@@ -30,7 +34,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 		reply, ok := s.LookupRoutePath(path)
 		if !ok {
-			c.String(404, "route not found")
+			c.HTML(http.StatusNotFound, "404.html", nil)
 		}
 
 		c.Redirect(http.StatusPermanentRedirect, reply)

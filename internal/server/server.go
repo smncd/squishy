@@ -1,14 +1,17 @@
 package server
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/smncd/squishy/internal/embedfs"
 	"gitlab.com/smncd/squishy/internal/filesystem"
 )
+
+//go:embed static/*
+var staticFS embed.FS
 
 func New(s *filesystem.SquishyFile) *http.Server {
 	if !s.Config.Debug {
@@ -17,9 +20,9 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 	router := gin.Default()
 
-	router.StaticFS("/static", http.FS(embedfs.FS))
+	router.StaticFS("/static", http.FS(staticFS))
 
-	f := template.Must(template.ParseFS(embedfs.FS, "*.html"))
+	f := template.Must(template.ParseFS(staticFS, "*.html"))
 	router.SetHTMLTemplate(f)
 
 	router.NoRoute(func(c *gin.Context) {
@@ -27,7 +30,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 		err := s.RefetchRoutes()
 		if err != nil {
-			data := embedfs.ErrorPageData{
+			data := ErrorPageData{
 				Title:       "Welp, that's not good",
 				Description: "There's been an error on our end, please check back later",
 			}
@@ -41,7 +44,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 		reply, ok := s.LookupRoutePath(path)
 		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", embedfs.ErrorPageData{
+			c.HTML(http.StatusNotFound, "error.html", ErrorPageData{
 				Title:       "Not Found",
 				Description: "The link you've accessed does not exist",
 			})

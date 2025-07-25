@@ -19,21 +19,29 @@ a {
 	color: #260C1A;
 }
 
-.main, .footer {
-	display: flex;
-	justify-content: center;
-	flex-direction: column;
-	gap: 16px;
-}
-
 .main {
 	height: 100%;
-}
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	gap: 16px;
 
-.main > .title {
-	font-size: 2.5rem;
-}
+	> * {
+		max-width: 30rem;
+	}
 
-.main > .desc {
-	font-size: 1.125rem;
+	> .title {
+		font-size: 2.5rem;
+	}
+
+	> .desc {
+		font-size: 1.125rem;
+	}
+
+	> .error {
+		padding: 16px;
+    	border-radius: 8px;
+		background-color: #d3d3d3;
+	}
 }

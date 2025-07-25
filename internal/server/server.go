@@ -27,16 +27,25 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 		err := s.RefetchRoutes()
 		if err != nil {
-			errorMessage := "error fetching routes"
-			if s.Config.Debug {
-				errorMessage = err.Error()
+			data := embedfs.ErrorPageData{
+				Title:       "Welp, that's not good",
+				Description: "There's been an error on our end, please check back later",
 			}
-			c.String(http.StatusInternalServerError, errorMessage)
+			if s.Config.Debug {
+				data.Error = err.Error()
+			}
+
+			c.HTML(http.StatusInternalServerError, "error.html", data)
+			return
 		}
 
 		reply, ok := s.LookupRoutePath(path)
 		if !ok {
-			c.HTML(http.StatusNotFound, "404.html", nil)
+			c.HTML(http.StatusNotFound, "error.html", embedfs.ErrorPageData{
+				Title:       "Not Found",
+				Description: "The link you've accessed does not exist",
+			})
+			return
 		}
 
 		c.Redirect(http.StatusPermanentRedirect, reply)

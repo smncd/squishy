@@ -12,8 +12,8 @@ You can obtain the standalone binary on the [releases page](https://gitlab.com/s
 
 Simply move this to the location of your choice and make sure it's executable:
 ```bash
-curl -LO https://gitlab.com/smncd/squishy/-/releases/squishy-v0.4.0-dev.2/downloads/squishy-linux-amd64-0.4.0-dev.2
-chmod +x ./squishy-linux-amd64-0.4.0-dev.2
+curl -LO https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.4/downloads/squishy-linux-arm64-0.4.0-dev.4
+chmod +x ./squishy-linux-arm64-0.4.0-dev.4
 ```
 
 Configuration

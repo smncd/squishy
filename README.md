@@ -16,6 +16,10 @@ curl -LO https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.4/downloads/squi
 chmod +x ./squishy-linux-arm64-0.4.0-dev.4
 ```
 
+Binaries are available for:
+- `linux-amd64`
+- `linux-arm64`
+
 Configuration
 -------------
 

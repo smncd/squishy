@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -31,8 +32,13 @@ type SquishyFile struct {
 	Routes map[string]any `yaml:"routes" json:"routes" validate:"required"`
 }
 
-func (s *SquishyFile) SetFilePath(filePath string) {
+func (s *SquishyFile) SetFilePath(filePath string) bool {
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
 	s.meta.filePath = filePath
+
+	return true
 }
 
 // Loads SquishyFile from filesystem

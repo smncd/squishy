@@ -47,6 +47,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 	return server
 }
+
 func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx RouterContext) {
 	w.WriteHeader(http.StatusNotFound)
 	ctx.errorTemplate.Execute(w, templates.ErrorPageData{

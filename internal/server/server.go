@@ -4,10 +4,12 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
+	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/server/router"
 	"gitlab.com/smncd/squishy/internal/templates"
 )
 
@@ -15,50 +17,58 @@ import (
 var staticFS embed.FS
 
 func New(s *filesystem.SquishyFile) *http.Server {
-	if !s.Config.Debug {
-		gin.SetMode(gin.ReleaseMode)
+	router, err := router.New(router.RouterContext{S: s})
+	if err != nil {
+		log.Fatalln("error")
 	}
 
-	router := gin.Default()
+	static, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		log.Fatalln("error")
+	}
 
-	router.StaticFS("/static", http.FS(staticFS))
+	router.StaticFS("/static/", static)
 
-	f := template.Must(template.ParseFS(templates.FS, "*.html"))
-	router.SetHTMLTemplate(f)
+	router.GET("/", handler)
 
-	router.NoRoute(func(c *gin.Context) {
-		path := c.Request.URL.Path
-
-		err := s.RefetchRoutes()
-		if err != nil {
-			data := templates.ErrorPageData{
-				Title:       "Welp, that's not good",
-				Description: "There's been an error on our end, please check back later",
-			}
-			if s.Config.Debug {
-				data.Error = err.Error()
-			}
-
-			c.HTML(http.StatusInternalServerError, "error.html", data)
-			return
-		}
-
-		reply, ok := s.LookupRoutePath(path)
-		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", templates.ErrorPageData{
-				Title:       "Not Found",
-				Description: "The link you've accessed does not exist",
-			})
-			return
-		}
-
-		c.Redirect(http.StatusPermanentRedirect, reply)
-	})
-
-	srv := &http.Server{
+	server := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", s.Config.Host, s.Config.Port),
-		Handler: router.Handler(),
+		Handler: router,
 	}
 
-	return srv
+	return server
+}
+
+func handler(w http.ResponseWriter, r *http.Request, ctx router.RouterContext) {
+	path := r.URL.Path
+
+	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
+
+	err := ctx.S.RefetchRoutes()
+	if err != nil {
+		data := templates.ErrorPageData{
+			Title:       "Welp, that's not good",
+			Description: "There's been an error on our end, please check back later",
+		}
+		if ctx.S.Config.Debug {
+			data.Error = err.Error()
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		tmpl.Execute(w, data)
+		return
+	}
+
+	reply, ok := ctx.S.LookupRoutePath(path)
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		tmpl.Execute(w, templates.ErrorPageData{
+			Title:       "Not Found",
+			Description: "The link you've accessed does not exist",
+		})
+
+		return
+	}
+
+	http.Redirect(w, r, reply, http.StatusPermanentRedirect)
 }

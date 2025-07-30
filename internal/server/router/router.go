@@ -32,13 +32,13 @@ func New(ctx RouterContext) (*Router, error) {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
-	rt := &Router{
+	r := &Router{
 		ctx:    ctx,
 		mux:    http.NewServeMux(),
 		routes: make(map[string]http.Handler),
 	}
 
-	return rt, nil
+	return r, nil
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -81,38 +81,38 @@ func (r *Router) HandleFunc(method, path string, handlerFunc HandlerFunc) {
 }
 
 // Registers a new GET request handle with the given path.
-func (rt *Router) GET(path string, handler HandlerFunc) {
-	rt.HandleFunc("GET", path, handler)
+func (r *Router) GET(path string, handler HandlerFunc) {
+	r.HandleFunc("GET", path, handler)
 }
 
 // Registers a new POST request handle with the given path.
-func (rt *Router) POST(path string, handler HandlerFunc) {
-	rt.HandleFunc("POST", path, handler)
+func (r *Router) POST(path string, handler HandlerFunc) {
+	r.HandleFunc("POST", path, handler)
 }
 
 // Registers a new PUT request handle with the given path.
-func (rt *Router) PUT(path string, handler HandlerFunc) {
-	rt.HandleFunc("PUT", path, handler)
+func (r *Router) PUT(path string, handler HandlerFunc) {
+	r.HandleFunc("PUT", path, handler)
 }
 
 // Registers a new DELETE request handle with the given path.
-func (rt *Router) DELETE(path string, handler HandlerFunc) {
-	rt.HandleFunc("DELETE", path, handler)
+func (r *Router) DELETE(path string, handler HandlerFunc) {
+	r.HandleFunc("DELETE", path, handler)
 }
 
-func (rt *Router) StaticFS(path string, fsys fs.FS) {
+func (r *Router) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 
-	handler := func(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
-		filePath := strings.TrimPrefix(r.URL.Path, path)
+	handler := func(w http.ResponseWriter, req *http.Request, ctx RouterContext) {
+		filePath := strings.TrimPrefix(req.URL.Path, path)
 
 		_, err := fs.Stat(fsys, filePath)
 		if err != nil {
 			return
 		}
 
-		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, r)
+		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, req)
 	}
 
-	rt.HandleFunc("GET", path, handler)
+	r.HandleFunc("GET", path, handler)
 }

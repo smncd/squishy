@@ -44,8 +44,8 @@ func (rt *Router) Mux() *http.ServeMux {
 	return rt.mux
 }
 
-// Handle registers a new request handle with the given path and method.
-func (rt *Router) Handle(method string, path string, handler HandlerFunc) {
+// handleFunc registers a new request handle with the given path and method.
+func (rt *Router) handleFunc(method string, path string, handler HandlerFunc) {
 	rt.mux.HandleFunc(fmt.Sprintf("%s %s", method, path), func(w http.ResponseWriter, r *http.Request) {
 		handler(w, r, rt.ctx)
 	})
@@ -53,22 +53,22 @@ func (rt *Router) Handle(method string, path string, handler HandlerFunc) {
 
 // Registers a new GET request handle with the given path.
 func (rt *Router) GET(path string, handler HandlerFunc) {
-	rt.Handle("GET", path, handler)
+	rt.handleFunc("GET", path, handler)
 }
 
 // Registers a new POST request handle with the given path.
 func (rt *Router) POST(path string, handler HandlerFunc) {
-	rt.Handle("POST", path, handler)
+	rt.handleFunc("POST", path, handler)
 }
 
 // Registers a new PUT request handle with the given path.
 func (rt *Router) PUT(path string, handler HandlerFunc) {
-	rt.Handle("PUT", path, handler)
+	rt.handleFunc("PUT", path, handler)
 }
 
 // Registers a new DELETE request handle with the given path.
 func (rt *Router) DELETE(path string, handler HandlerFunc) {
-	rt.Handle("DELETE", path, handler)
+	rt.handleFunc("DELETE", path, handler)
 }
 
 func (rt *Router) StaticFS(path string, fsys fs.FS, errorHandler func(w http.ResponseWriter, r *http.Request)) {

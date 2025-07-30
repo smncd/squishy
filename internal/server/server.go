@@ -16,11 +16,16 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
+type RouterContext struct {
+	s *filesystem.SquishyFile
+}
+
 func New(s *filesystem.SquishyFile) *http.Server {
-	router, err := router.New(router.RouterContext{S: s})
-	if err != nil {
-		log.Fatalln("error")
+	rCtx := RouterContext{
+		s: s,
 	}
+
+	router := router.New(rCtx)
 
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -39,18 +44,18 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	return server
 }
 
-func handler(w http.ResponseWriter, r *http.Request, ctx router.RouterContext) {
+func handler(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
 	path := r.URL.Path
 
 	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
 
-	err := ctx.S.RefetchRoutes()
+	err := ctx.s.RefetchRoutes()
 	if err != nil {
 		data := templates.ErrorPageData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
-		if ctx.S.Config.Debug {
+		if ctx.s.Config.Debug {
 			data.Error = err.Error()
 		}
 
@@ -59,7 +64,7 @@ func handler(w http.ResponseWriter, r *http.Request, ctx router.RouterContext) {
 		return
 	}
 
-	reply, ok := ctx.S.LookupRoutePath(path)
+	reply, ok := ctx.s.LookupRoutePath(path)
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		tmpl.Execute(w, templates.ErrorPageData{

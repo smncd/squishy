@@ -4,61 +4,83 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
+	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/router"
 	"gitlab.com/smncd/squishy/internal/templates"
 )
 
 //go:embed static/*
 var staticFS embed.FS
 
+type RouterContext struct {
+	s             *filesystem.SquishyFile
+	errorTemplate *template.Template
+}
+
 func New(s *filesystem.SquishyFile) *http.Server {
-	if !s.Config.Debug {
-		gin.SetMode(gin.ReleaseMode)
+	rCtx := RouterContext{
+		s:             s,
+		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
 	}
 
-	router := gin.Default()
+	router := router.New(rCtx)
 
-	router.StaticFS("/static", http.FS(staticFS))
+	static, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		log.Fatalln("error")
+	}
 
-	f := template.Must(template.ParseFS(templates.FS, "*.html"))
-	router.SetHTMLTemplate(f)
+	router.Fallback(notFoundHandler)
 
-	router.NoRoute(func(c *gin.Context) {
-		path := c.Request.URL.Path
+	router.StaticFS("/static/", static)
 
-		err := s.RefetchRoutes()
-		if err != nil {
-			data := templates.ErrorPageData{
-				Title:       "Welp, that's not good",
-				Description: "There's been an error on our end, please check back later",
-			}
-			if s.Config.Debug {
-				data.Error = err.Error()
-			}
+	router.GET("/", handler)
 
-			c.HTML(http.StatusInternalServerError, "error.html", data)
-			return
-		}
-
-		reply, ok := s.LookupRoutePath(path)
-		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", templates.ErrorPageData{
-				Title:       "Not Found",
-				Description: "The link you've accessed does not exist",
-			})
-			return
-		}
-
-		c.Redirect(http.StatusPermanentRedirect, reply)
-	})
-
-	srv := &http.Server{
+	server := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", s.Config.Host, s.Config.Port),
-		Handler: router.Handler(),
+		Handler: router,
 	}
 
-	return srv
+	return server
+}
+
+func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx RouterContext) {
+	w.WriteHeader(http.StatusNotFound)
+	ctx.errorTemplate.Execute(w, templates.ErrorPageData{
+		Title:       "Not Found",
+		Description: "The link you've accessed does not exist",
+	})
+}
+
+func handler(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
+	path := r.URL.Path
+
+	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
+
+	err := ctx.s.RefetchRoutes()
+	if err != nil {
+		data := templates.ErrorPageData{
+			Title:       "Welp, that's not good",
+			Description: "There's been an error on our end, please check back later",
+		}
+		if ctx.s.Config.Debug {
+			data.Error = err.Error()
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		tmpl.Execute(w, data)
+		return
+	}
+
+	reply, ok := ctx.s.LookupRoutePath(path)
+	if !ok {
+		notFoundHandler(w, r, ctx)
+		return
+	}
+
+	http.Redirect(w, r, reply, http.StatusPermanentRedirect)
 }

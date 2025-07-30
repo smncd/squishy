@@ -75,7 +75,7 @@ func (rt *Router) StaticFS(path string, fsys fs.FS, errorHandler func(w http.Res
 	path = ensureTrailingSlash(path)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		filePath := strings.TrimPrefix(r.URL.Path, "/")
+		filePath := strings.TrimPrefix(r.URL.Path, path)
 
 		_, err := fs.Stat(fsys, filePath)
 		if err != nil {
@@ -83,7 +83,7 @@ func (rt *Router) StaticFS(path string, fsys fs.FS, errorHandler func(w http.Res
 			return
 		}
 
-		http.FileServer(http.FS(fsys)).ServeHTTP(w, r)
+		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, r)
 	})
 
 	rt.mux.Handle(fmt.Sprintf("GET %s", path), handler)

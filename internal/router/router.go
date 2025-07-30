@@ -100,6 +100,7 @@ func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 		_, err := fs.Stat(fsys, filePath)
 		if err != nil {
 			r.fallbackRoute.ServeHTTP(w, req)
+			return
 		}
 
 		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, req)

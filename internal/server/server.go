@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
-	"gitlab.com/smncd/squishy/internal/server/router"
+	"gitlab.com/smncd/squishy/internal/router"
 	"gitlab.com/smncd/squishy/internal/templates"
 )
 

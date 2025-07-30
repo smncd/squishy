@@ -11,16 +11,18 @@ type HandlerFunc[C any] func(http.ResponseWriter, *http.Request, C)
 
 // Router is an HTTP request router that uses http.ServeMux, as well as custom context.
 type Router[C any] struct {
-	ctx    C
-	mux    *http.ServeMux
-	routes map[string]http.Handler
+	ctx           C
+	mux           *http.ServeMux
+	routes        map[string]http.Handler
+	fallbackRoute http.Handler
 }
 
 func New[C any](ctx C) *Router[C] {
 	return &Router[C]{
-		ctx:    ctx,
-		mux:    http.NewServeMux(),
-		routes: make(map[string]http.Handler),
+		ctx:           ctx,
+		mux:           http.NewServeMux(),
+		routes:        make(map[string]http.Handler),
+		fallbackRoute: http.NotFoundHandler(),
 	}
 }
 
@@ -47,7 +49,7 @@ func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	http.NotFound(w, req)
+	r.fallbackRoute.ServeHTTP(w, req)
 }
 
 // Handle allows registering a route with an http.Handler
@@ -83,6 +85,12 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 	r.HandleFunc("DELETE", path, handler)
 }
 
+func (r *Router[C]) Fallback(handlerFunc HandlerFunc[C]) {
+	r.fallbackRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		handlerFunc(w, req, r.ctx)
+	})
+}
+
 func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 
@@ -91,7 +99,7 @@ func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 
 		_, err := fs.Stat(fsys, filePath)
 		if err != nil {
-			return
+			r.fallbackRoute.ServeHTTP(w, req)
 		}
 
 		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, req)

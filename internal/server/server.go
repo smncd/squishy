@@ -17,12 +17,14 @@ import (
 var staticFS embed.FS
 
 type RouterContext struct {
-	s *filesystem.SquishyFile
+	s             *filesystem.SquishyFile
+	errorTemplate *template.Template
 }
 
 func New(s *filesystem.SquishyFile) *http.Server {
 	rCtx := RouterContext{
-		s: s,
+		s:             s,
+		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
 	}
 
 	router := router.New(rCtx)
@@ -31,6 +33,8 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	if err != nil {
 		log.Fatalln("error")
 	}
+
+	router.Fallback(notFoundHandler)
 
 	router.StaticFS("/static/", static)
 
@@ -42,6 +46,13 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	}
 
 	return server
+}
+func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx RouterContext) {
+	w.WriteHeader(http.StatusNotFound)
+	ctx.errorTemplate.Execute(w, templates.ErrorPageData{
+		Title:       "Not Found",
+		Description: "The link you've accessed does not exist",
+	})
 }
 
 func handler(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
@@ -66,12 +77,7 @@ func handler(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
 
 	reply, ok := ctx.s.LookupRoutePath(path)
 	if !ok {
-		w.WriteHeader(http.StatusNotFound)
-		tmpl.Execute(w, templates.ErrorPageData{
-			Title:       "Not Found",
-			Description: "The link you've accessed does not exist",
-		})
-
+		notFoundHandler(w, r, ctx)
 		return
 	}
 

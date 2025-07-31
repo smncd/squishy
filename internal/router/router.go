@@ -52,37 +52,37 @@ func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.fallbackRoute.ServeHTTP(w, req)
 }
 
-// Handle allows registering a route with an http.Handler
-func (r *Router[C]) Handle(method, path string, handler http.Handler) {
+// Route allows registering a route with an http.Handler
+func (r *Router[C]) Route(method, path string, handler http.Handler) {
 	key := fmt.Sprintf("%s %s", method, path)
 	r.routes[key] = handler
 }
 
-// HandleFunc allows registering a route with a function
-func (r *Router[C]) HandleFunc(method, path string, handlerFunc HandlerFunc[C]) {
-	r.Handle(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+// RouteFunc allows registering a route with a function
+func (r *Router[C]) RouteFunc(method, path string, handlerFunc HandlerFunc[C]) {
+	r.Route(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)
 	}))
 }
 
 // Registers a new GET request handle with the given path.
 func (r *Router[C]) GET(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("GET", path, handler)
+	r.RouteFunc("GET", path, handler)
 }
 
 // Registers a new POST request handle with the given path.
 func (r *Router[C]) POST(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("POST", path, handler)
+	r.RouteFunc("POST", path, handler)
 }
 
 // Registers a new PUT request handle with the given path.
 func (r *Router[C]) PUT(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("PUT", path, handler)
+	r.RouteFunc("PUT", path, handler)
 }
 
 // Registers a new DELETE request handle with the given path.
 func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("DELETE", path, handler)
+	r.RouteFunc("DELETE", path, handler)
 }
 
 func (r *Router[C]) Fallback(handlerFunc HandlerFunc[C]) {
@@ -106,5 +106,5 @@ func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, req)
 	}
 
-	r.HandleFunc("GET", path, handler)
+	r.RouteFunc("GET", path, handler)
 }

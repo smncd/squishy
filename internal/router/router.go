@@ -11,18 +11,18 @@ type HandlerFunc[C any] func(http.ResponseWriter, *http.Request, C)
 
 // Router is an HTTP request router that uses http.ServeMux, as well as custom context.
 type Router[C any] struct {
-	ctx           C
-	mux           *http.ServeMux
-	routes        map[string]http.Handler
-	fallbackRoute http.Handler
+	ctx     C
+	mux     *http.ServeMux
+	routes  map[string]http.Handler
+	noRoute http.Handler
 }
 
 func New[C any](ctx C) *Router[C] {
 	return &Router[C]{
-		ctx:           ctx,
-		mux:           http.NewServeMux(),
-		routes:        make(map[string]http.Handler),
-		fallbackRoute: http.NotFoundHandler(),
+		ctx:     ctx,
+		mux:     http.NewServeMux(),
+		routes:  make(map[string]http.Handler),
+		noRoute: http.NotFoundHandler(),
 	}
 }
 
@@ -49,48 +49,52 @@ func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	r.fallbackRoute.ServeHTTP(w, req)
+	r.noRoute.ServeHTTP(w, req)
 }
 
-// Handle allows registering a route with an http.Handler
-func (r *Router[C]) Handle(method, path string, handler http.Handler) {
+// Registers a new route with the specified HTTP method and path using an http.Handler.
+func (r *Router[C]) Route(method, path string, handler http.Handler) {
 	key := fmt.Sprintf("%s %s", method, path)
 	r.routes[key] = handler
 }
 
-// HandleFunc allows registering a route with a function
-func (r *Router[C]) HandleFunc(method, path string, handlerFunc HandlerFunc[C]) {
-	r.Handle(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+// Registers a new route with the specified HTTP method and path using a custom HandlerFunc.
+func (r *Router[C]) RouteFunc(method, path string, handlerFunc HandlerFunc[C]) {
+	r.Route(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)
 	}))
 }
 
 // Registers a new GET request handle with the given path.
 func (r *Router[C]) GET(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("GET", path, handler)
+	r.RouteFunc("GET", path, handler)
 }
 
 // Registers a new POST request handle with the given path.
 func (r *Router[C]) POST(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("POST", path, handler)
+	r.RouteFunc("POST", path, handler)
 }
 
 // Registers a new PUT request handle with the given path.
 func (r *Router[C]) PUT(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("PUT", path, handler)
+	r.RouteFunc("PUT", path, handler)
 }
 
 // Registers a new DELETE request handle with the given path.
 func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
-	r.HandleFunc("DELETE", path, handler)
+	r.RouteFunc("DELETE", path, handler)
 }
 
-func (r *Router[C]) Fallback(handlerFunc HandlerFunc[C]) {
-	r.fallbackRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+// Used in case no other routes are available/applicable.
+// Matches _any_ incoming requests.
+// Defaults to `http.NotFoundHandler()`.
+func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
+	r.noRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)
 	})
 }
 
+// Serve files from a filesystem.
 func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 
@@ -99,12 +103,12 @@ func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 
 		_, err := fs.Stat(fsys, filePath)
 		if err != nil {
-			r.fallbackRoute.ServeHTTP(w, req)
+			r.noRoute.ServeHTTP(w, req)
 			return
 		}
 
 		http.StripPrefix(path, http.FileServer(http.FS(fsys))).ServeHTTP(w, req)
 	}
 
-	r.HandleFunc("GET", path, handler)
+	r.RouteFunc("GET", path, handler)
 }

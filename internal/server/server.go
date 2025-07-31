@@ -34,7 +34,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 		log.Fatalln("error")
 	}
 
-	router.Fallback(notFoundHandler)
+	router.NoRoute(notFoundHandler)
 
 	router.StaticFS("/static/", static)
 

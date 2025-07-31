@@ -85,7 +85,7 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 	r.RouteFunc("DELETE", path, handler)
 }
 
-func (r *Router[C]) Fallback(handlerFunc HandlerFunc[C]) {
+func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
 	r.fallbackRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)
 	})

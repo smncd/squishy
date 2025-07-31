@@ -85,6 +85,9 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 	r.RouteFunc("DELETE", path, handler)
 }
 
+// Used in case no other routes are available/applicable.
+// Matches _any_ incoming requests.
+// Defaults to `http.NotFoundHandler()`.
 func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
 	r.noRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)

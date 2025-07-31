@@ -16,18 +16,18 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
-type RouterContext struct {
+type SharedContext struct {
 	s             *filesystem.SquishyFile
 	errorTemplate *template.Template
 }
 
 func New(s *filesystem.SquishyFile) *http.Server {
-	rCtx := RouterContext{
+	ctx := SharedContext{
 		s:             s,
 		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
 	}
 
-	router := router.New(rCtx)
+	router := router.New(ctx)
 
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -48,7 +48,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	return server
 }
 
-func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx RouterContext) {
+func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
 	ctx.errorTemplate.Execute(w, templates.ErrorPageData{
 		Title:       "Not Found",
@@ -56,7 +56,7 @@ func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx RouterContext
 	})
 }
 
-func handler(w http.ResponseWriter, r *http.Request, ctx RouterContext) {
+func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 	path := r.URL.Path
 
 	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))

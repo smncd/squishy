@@ -52,13 +52,13 @@ func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.noRoute.ServeHTTP(w, req)
 }
 
-// Route allows registering a route with an http.Handler
+// Registers a new route with the specified HTTP method and path using an http.Handler.
 func (r *Router[C]) Route(method, path string, handler http.Handler) {
 	key := fmt.Sprintf("%s %s", method, path)
 	r.routes[key] = handler
 }
 
-// RouteFunc allows registering a route with a function
+// Registers a new route with the specified HTTP method and path using a custom HandlerFunc.
 func (r *Router[C]) RouteFunc(method, path string, handlerFunc HandlerFunc[C]) {
 	r.Route(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.ctx)
@@ -94,6 +94,7 @@ func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
 	})
 }
 
+// Serve files from a filesystem.
 func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 

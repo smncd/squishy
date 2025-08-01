@@ -26,7 +26,7 @@ install-dev-deps:
 .PHONY: dev
 dev:
 	$(info Starting air dev process)
-	$(GOPATH)/bin/air
+	@$(GOPATH)/bin/air
 
 .PHONY: run
 run:

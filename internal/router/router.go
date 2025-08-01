@@ -96,9 +96,9 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 // Matches _any_ incoming requests.
 // Defaults to `http.NotFoundHandler()`.
 func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
-	r.noRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	r.noRoute = r.handlerLoggingWrapper(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		handlerFunc(w, req, r.c)
-	})
+	}))
 }
 
 // Serve files from a filesystem.

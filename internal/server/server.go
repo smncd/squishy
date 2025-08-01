@@ -21,13 +21,13 @@ type SharedContext struct {
 	errorTemplate *template.Template
 }
 
-func New(s *filesystem.SquishyFile) *http.Server {
+func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
 	sc := SharedContext{
 		s:             s,
 		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
 	}
 
-	router := router.New(sc)
+	router := router.New(sc, logger)
 
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {

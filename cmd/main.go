@@ -16,6 +16,7 @@ import (
 var Version string
 
 func main() {
+	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
 	s := &filesystem.SquishyFile{}
 
 	s.SetFilePath("squishy.yaml")
@@ -25,7 +26,7 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	server := server.New(s)
+	server := server.New(s, logger)
 
 	log.Printf("Starting Squishy v%s...", Version)
 

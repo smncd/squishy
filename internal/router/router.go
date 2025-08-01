@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -20,12 +19,12 @@ type Router[C any] struct {
 	logger  *log.Logger
 }
 
-func New[C any](c C) *Router[C] {
+func New[C any](c C, logger *log.Logger) *Router[C] {
 	r := &Router[C]{
 		c:      c,
 		mux:    http.NewServeMux(),
 		routes: make(map[string]http.Handler),
-		logger: log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime),
+		logger: logger,
 	}
 
 	r.noRoute = r.handlerLoggingWrapper(http.NotFoundHandler())

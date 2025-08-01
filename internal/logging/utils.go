@@ -12,9 +12,9 @@ func Debug(logger *log.Logger, format string, v ...any) {
 	printfWith(logger, "DEBUG: ", log.Ldate|log.Ltime|log.Llongfile, format, v...)
 }
 
-// Sets logger in "fatal" mode for one print operation.
-func Fatal(logger *log.Logger, format string, v ...any) {
-	printfWith(logger, "FATAL: ", log.Ldate|log.Ltime|log.Lshortfile, format, v...)
+// Sets logger in "error" mode for one print operation.
+func Error(logger *log.Logger, format string, v ...any) {
+	printfWith(logger, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile, format, v...)
 }
 
 func printfWith(logger *log.Logger, prefix string, flags int, format string, v ...any) {

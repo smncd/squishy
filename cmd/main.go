@@ -24,7 +24,7 @@ func main() {
 
 	err := s.Load()
 	if err != nil {
-		logging.Fatal(logger, "Error loading config: %v", err)
+		logging.Error(logger, "Error loading config: %v", err)
 		os.Exit(1)
 	}
 
@@ -34,7 +34,7 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logging.Fatal(logger, "listen: %s\n", err)
+			logging.Error(logger, "listen: %s\n", err)
 			os.Exit(1)
 		}
 	}()

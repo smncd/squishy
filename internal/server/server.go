@@ -1,7 +1,6 @@
 package server
 
 import (
-	"embed"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -10,12 +9,9 @@ import (
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
 	"gitlab.com/smncd/squishy/internal/logging"
+	"gitlab.com/smncd/squishy/internal/resources"
 	"gitlab.com/smncd/squishy/internal/router"
-	"gitlab.com/smncd/squishy/internal/templates"
 )
-
-//go:embed static/*
-var staticFS embed.FS
 
 type SharedContext struct {
 	s             *filesystem.SquishyFile
@@ -26,20 +22,20 @@ type SharedContext struct {
 func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
 	sc := SharedContext{
 		s:             s,
-		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
+		errorTemplate: template.Must(template.ParseFS(resources.TemplateFS, "templates/error.html")),
 		logger:        logger,
 	}
 
 	router := router.New(sc, logger)
 
-	static, err := fs.Sub(staticFS, "static")
+	staticFS, err := fs.Sub(resources.StaticFS, "static")
 	if err != nil {
 		log.Fatalln("error")
 	}
 
 	router.NoRoute(notFoundHandler)
 
-	router.StaticFS("/static/", static)
+	router.StaticFS("/static/", staticFS)
 
 	router.GET("/", handler)
 
@@ -53,7 +49,7 @@ func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
 
 func notFoundHandler(w http.ResponseWriter, req *http.Request, sc SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
-	sc.errorTemplate.Execute(w, templates.ErrorPageData{
+	sc.errorTemplate.Execute(w, resources.ErrorTemplateData{
 		Title:       "Not Found",
 		Description: "The link you've accessed does not exist",
 	})
@@ -62,11 +58,9 @@ func notFoundHandler(w http.ResponseWriter, req *http.Request, sc SharedContext)
 func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 	path := r.URL.Path
 
-	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
-
 	err := sc.s.RefetchRoutes()
 	if err != nil {
-		data := templates.ErrorPageData{
+		data := resources.ErrorTemplateData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
@@ -78,7 +72,7 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		tmpl.Execute(w, data)
+		sc.errorTemplate.Execute(w, data)
 		return
 	}
 

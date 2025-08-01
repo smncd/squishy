@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/resources"
 	"gitlab.com/smncd/squishy/internal/router"
 )
@@ -15,15 +16,17 @@ import (
 type SharedContext struct {
 	s             *filesystem.SquishyFile
 	errorTemplate *template.Template
+	logger        *log.Logger
 }
 
-func New(s *filesystem.SquishyFile) *http.Server {
-	ctx := SharedContext{
+func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
+	sc := SharedContext{
 		s:             s,
 		errorTemplate: template.Must(template.ParseFS(resources.TemplateFS, "templates/error.html")),
+		logger:        logger,
 	}
 
-	router := router.New(ctx)
+	router := router.New(sc, logger)
 
 	staticFS, err := fs.Sub(resources.StaticFS, "static")
 	if err != nil {
@@ -44,35 +47,40 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	return server
 }
 
-func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext) {
+func notFoundHandler(w http.ResponseWriter, req *http.Request, sc SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
-	ctx.errorTemplate.Execute(w, resources.ErrorTemplateData{
+	sc.errorTemplate.Execute(w, resources.ErrorTemplateData{
 		Title:       "Not Found",
 		Description: "The link you've accessed does not exist",
 	})
 }
 
-func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
+func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 	path := r.URL.Path
 
-	err := ctx.s.RefetchRoutes()
+	err := sc.s.RefetchRoutes()
 	if err != nil {
 		data := resources.ErrorTemplateData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
-		if ctx.s.Config.Debug {
+		if sc.s.Config.Debug {
 			data.Error = err.Error()
+
+			logging.Debug(sc.logger, "error refetching routes: %s", err)
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		ctx.errorTemplate.Execute(w, data)
+		sc.errorTemplate.Execute(w, data)
 		return
 	}
 
-	reply, ok := ctx.s.LookupRoutePath(path)
-	if !ok {
-		notFoundHandler(w, r, ctx)
+	reply, err := sc.s.LookupRoutePath(path)
+	if err != nil {
+		notFoundHandler(w, r, sc)
+		if sc.s.Config.Debug {
+			logging.Debug(sc.logger, "Route not found: %s", err)
+		}
 		return
 	}
 

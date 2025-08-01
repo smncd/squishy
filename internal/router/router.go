@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -11,19 +12,24 @@ type HandlerFunc[C any] func(http.ResponseWriter, *http.Request, C)
 
 // Router is an HTTP request router that uses http.ServeMux, as well as custom context.
 type Router[C any] struct {
-	ctx     C
+	c       C
 	mux     *http.ServeMux
 	routes  map[string]http.Handler
 	noRoute http.Handler
+	logger  *log.Logger
 }
 
-func New[C any](ctx C) *Router[C] {
-	return &Router[C]{
-		ctx:     ctx,
-		mux:     http.NewServeMux(),
-		routes:  make(map[string]http.Handler),
-		noRoute: http.NotFoundHandler(),
+func New[C any](c C, logger *log.Logger) *Router[C] {
+	r := &Router[C]{
+		c:      c,
+		mux:    http.NewServeMux(),
+		routes: make(map[string]http.Handler),
+		logger: logger,
 	}
+
+	r.noRoute = r.handlerLoggingWrapper(http.NotFoundHandler())
+
+	return r
 }
 
 func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -55,13 +61,13 @@ func (r *Router[C]) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // Registers a new route with the specified HTTP method and path using an http.Handler.
 func (r *Router[C]) Route(method, path string, handler http.Handler) {
 	key := fmt.Sprintf("%s %s", method, path)
-	r.routes[key] = handler
+	r.routes[key] = r.handlerLoggingWrapper(handler)
 }
 
 // Registers a new route with the specified HTTP method and path using a custom HandlerFunc.
 func (r *Router[C]) RouteFunc(method, path string, handlerFunc HandlerFunc[C]) {
 	r.Route(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		handlerFunc(w, req, r.ctx)
+		handlerFunc(w, req, r.c)
 	}))
 }
 
@@ -89,16 +95,16 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 // Matches _any_ incoming requests.
 // Defaults to `http.NotFoundHandler()`.
 func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
-	r.noRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		handlerFunc(w, req, r.ctx)
-	})
+	r.noRoute = r.handlerLoggingWrapper(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		handlerFunc(w, req, r.c)
+	}))
 }
 
 // Serve files from a filesystem.
 func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 
-	handler := func(w http.ResponseWriter, req *http.Request, ctx C) {
+	handler := func(w http.ResponseWriter, req *http.Request, c C) {
 		filePath := strings.TrimPrefix(req.URL.Path, path)
 
 		_, err := fs.Stat(fsys, filePath)
@@ -111,4 +117,16 @@ func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	}
 
 	r.RouteFunc("GET", path, handler)
+}
+
+// Wrap http handler in logging function, with custom response writer wrapper.
+func (r *Router[C]) handlerLoggingWrapper(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+
+		rww := NewResponseWriterWrapper(w)
+
+		handler.ServeHTTP(rww, req)
+
+		r.logger.Printf("| %s %s %s %v", req.Proto, req.Method, req.URL.Path, rww.statusCode)
+	})
 }

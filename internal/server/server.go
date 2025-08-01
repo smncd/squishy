@@ -67,8 +67,7 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 		if sc.s.Config.Debug {
 			data.Error = err.Error()
 
-			logging.SetToDebug(sc.logger)
-			sc.logger.Printf("Error refetching routes: %s", err)
+			logging.Debug(sc.logger, "error refetching routes: %s", err)
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
@@ -79,6 +78,9 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 	reply, err := sc.s.LookupRoutePath(path)
 	if err != nil {
 		notFoundHandler(w, r, sc)
+		if sc.s.Config.Debug {
+			logging.Debug(sc.logger, "Route not found: %s", err)
+		}
 		return
 	}
 

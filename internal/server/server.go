@@ -1,7 +1,6 @@
 package server
 
 import (
-	"embed"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -9,12 +8,9 @@ import (
 	"net/http"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/resources"
 	"gitlab.com/smncd/squishy/internal/router"
-	"gitlab.com/smncd/squishy/internal/templates"
 )
-
-//go:embed static/*
-var staticFS embed.FS
 
 type SharedContext struct {
 	s             *filesystem.SquishyFile
@@ -24,19 +20,19 @@ type SharedContext struct {
 func New(s *filesystem.SquishyFile) *http.Server {
 	ctx := SharedContext{
 		s:             s,
-		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
+		errorTemplate: template.Must(template.ParseFS(resources.TemplateFS, "templates/error.html")),
 	}
 
 	router := router.New(ctx)
 
-	static, err := fs.Sub(staticFS, "static")
+	staticFS, err := fs.Sub(resources.StaticFS, "static")
 	if err != nil {
 		log.Fatalln("error")
 	}
 
 	router.NoRoute(notFoundHandler)
 
-	router.StaticFS("/static/", static)
+	router.StaticFS("/static/", staticFS)
 
 	router.GET("/", handler)
 
@@ -50,7 +46,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 
 func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
-	ctx.errorTemplate.Execute(w, templates.ErrorPageData{
+	ctx.errorTemplate.Execute(w, resources.ErrorTemplateData{
 		Title:       "Not Found",
 		Description: "The link you've accessed does not exist",
 	})
@@ -59,11 +55,9 @@ func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext
 func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 	path := r.URL.Path
 
-	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
-
 	err := ctx.s.RefetchRoutes()
 	if err != nil {
-		data := templates.ErrorPageData{
+		data := resources.ErrorTemplateData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
@@ -72,7 +66,7 @@ func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		tmpl.Execute(w, data)
+		ctx.errorTemplate.Execute(w, data)
 		return
 	}
 

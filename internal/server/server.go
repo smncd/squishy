@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/router"
 	"gitlab.com/smncd/squishy/internal/templates"
 )
@@ -19,12 +20,14 @@ var staticFS embed.FS
 type SharedContext struct {
 	s             *filesystem.SquishyFile
 	errorTemplate *template.Template
+	logger        *log.Logger
 }
 
 func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
 	sc := SharedContext{
 		s:             s,
 		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
+		logger:        logger,
 	}
 
 	router := router.New(sc, logger)
@@ -69,6 +72,9 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 		}
 		if sc.s.Config.Debug {
 			data.Error = err.Error()
+
+			logging.SetToDebug(sc.logger)
+			sc.logger.Printf("Error refetching routes: %s", err)
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)

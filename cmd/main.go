@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/server"
 )
 
@@ -23,29 +24,30 @@ func main() {
 
 	err := s.Load()
 	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+		logging.SetToFatal(logger)
+		logger.Fatalf("Error loading config: %v", err)
 	}
 
 	server := server.New(s, logger)
 
-	log.Printf("Starting Squishy v%s...", Version)
+	logger.Printf("Starting Squishy v%s...", Version)
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			logger.Fatalf("listen: %s\n", err)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutdown Squishy ...")
+	logger.Println("Shutdown Squishy ...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalln("Server Shutdown:", err)
+		logger.Fatalln("Server Shutdown:", err)
 	}
 
-	log.Println("Squishy exiting")
+	logger.Println("Squishy exiting")
 }

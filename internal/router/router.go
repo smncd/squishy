@@ -13,16 +13,16 @@ type HandlerFunc[C any] func(http.ResponseWriter, *http.Request, C)
 
 // Router is an HTTP request router that uses http.ServeMux, as well as custom context.
 type Router[C any] struct {
-	ctx     C
+	c       C
 	mux     *http.ServeMux
 	routes  map[string]http.Handler
 	noRoute http.Handler
 	logger  *log.Logger
 }
 
-func New[C any](ctx C) *Router[C] {
+func New[C any](c C) *Router[C] {
 	r := &Router[C]{
-		ctx:    ctx,
+		c:      c,
 		mux:    http.NewServeMux(),
 		routes: make(map[string]http.Handler),
 		logger: log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime),
@@ -68,7 +68,7 @@ func (r *Router[C]) Route(method, path string, handler http.Handler) {
 // Registers a new route with the specified HTTP method and path using a custom HandlerFunc.
 func (r *Router[C]) RouteFunc(method, path string, handlerFunc HandlerFunc[C]) {
 	r.Route(method, path, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		handlerFunc(w, req, r.ctx)
+		handlerFunc(w, req, r.c)
 	}))
 }
 
@@ -97,7 +97,7 @@ func (r *Router[C]) DELETE(path string, handler HandlerFunc[C]) {
 // Defaults to `http.NotFoundHandler()`.
 func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
 	r.noRoute = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		handlerFunc(w, req, r.ctx)
+		handlerFunc(w, req, r.c)
 	})
 }
 
@@ -105,7 +105,7 @@ func (r *Router[C]) NoRoute(handlerFunc HandlerFunc[C]) {
 func (r *Router[C]) StaticFS(path string, fsys fs.FS) {
 	path = ensureTrailingSlash(path)
 
-	handler := func(w http.ResponseWriter, req *http.Request, ctx C) {
+	handler := func(w http.ResponseWriter, req *http.Request, c C) {
 		filePath := strings.TrimPrefix(req.URL.Path, path)
 
 		_, err := fs.Stat(fsys, filePath)

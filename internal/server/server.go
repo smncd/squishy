@@ -48,26 +48,26 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	return server
 }
 
-func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext) {
+func notFoundHandler(w http.ResponseWriter, req *http.Request, c SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
-	ctx.errorTemplate.Execute(w, templates.ErrorPageData{
+	c.errorTemplate.Execute(w, templates.ErrorPageData{
 		Title:       "Not Found",
 		Description: "The link you've accessed does not exist",
 	})
 }
 
-func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
+func handler(w http.ResponseWriter, r *http.Request, c SharedContext) {
 	path := r.URL.Path
 
 	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
 
-	err := ctx.s.RefetchRoutes()
+	err := c.s.RefetchRoutes()
 	if err != nil {
 		data := templates.ErrorPageData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
-		if ctx.s.Config.Debug {
+		if c.s.Config.Debug {
 			data.Error = err.Error()
 		}
 
@@ -76,9 +76,9 @@ func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 		return
 	}
 
-	reply, ok := ctx.s.LookupRoutePath(path)
+	reply, ok := c.s.LookupRoutePath(path)
 	if !ok {
-		notFoundHandler(w, r, ctx)
+		notFoundHandler(w, r, c)
 		return
 	}
 

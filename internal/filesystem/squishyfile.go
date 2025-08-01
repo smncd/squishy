@@ -134,7 +134,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 	return nil
 }
 
-func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
+func (s *SquishyFile) LookupRoutePath(path string) (string, error) {
 	indexKey := "_index"
 	var keys []string
 
@@ -155,19 +155,19 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 	for i, key := range keys {
 		currentLevel, ok := result.(map[string]any)
 		if !ok {
-			return "", false
+			return "", errors.New("result is not of type map[string]any")
 		}
 
 		result, ok = currentLevel[key]
 		if !ok {
-			return "", false
+			return "", fmt.Errorf("key %s not found", key)
 		}
 
 		if i == len(keys)-1 {
 			if level, ok := result.(map[string]any); ok {
 				result, ok = level[indexKey]
 				if !ok {
-					return "", false
+					return "", fmt.Errorf("key %s not found", indexKey)
 				}
 			}
 
@@ -177,10 +177,10 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
 
 	reply, ok := result.(string)
 	if !ok {
-		return "", false
+		return "", errors.New("result is not string")
 	}
 
-	return reply, true
+	return reply, nil
 
 }
 

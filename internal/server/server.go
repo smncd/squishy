@@ -76,8 +76,8 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 		return
 	}
 
-	reply, ok := sc.s.LookupRoutePath(path)
-	if !ok {
+	reply, err := sc.s.LookupRoutePath(path)
+	if err != nil {
 		notFoundHandler(w, r, sc)
 		return
 	}

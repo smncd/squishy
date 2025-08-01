@@ -22,12 +22,12 @@ type SharedContext struct {
 }
 
 func New(s *filesystem.SquishyFile) *http.Server {
-	ctx := SharedContext{
+	sc := SharedContext{
 		s:             s,
 		errorTemplate: template.Must(template.ParseFS(templates.FS, "error.html")),
 	}
 
-	router := router.New(ctx)
+	router := router.New(sc)
 
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -48,26 +48,26 @@ func New(s *filesystem.SquishyFile) *http.Server {
 	return server
 }
 
-func notFoundHandler(w http.ResponseWriter, req *http.Request, c SharedContext) {
+func notFoundHandler(w http.ResponseWriter, req *http.Request, sc SharedContext) {
 	w.WriteHeader(http.StatusNotFound)
-	c.errorTemplate.Execute(w, templates.ErrorPageData{
+	sc.errorTemplate.Execute(w, templates.ErrorPageData{
 		Title:       "Not Found",
 		Description: "The link you've accessed does not exist",
 	})
 }
 
-func handler(w http.ResponseWriter, r *http.Request, c SharedContext) {
+func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 	path := r.URL.Path
 
 	tmpl := template.Must(template.ParseFS(templates.FS, "error.html"))
 
-	err := c.s.RefetchRoutes()
+	err := sc.s.RefetchRoutes()
 	if err != nil {
 		data := templates.ErrorPageData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
-		if c.s.Config.Debug {
+		if sc.s.Config.Debug {
 			data.Error = err.Error()
 		}
 
@@ -76,9 +76,9 @@ func handler(w http.ResponseWriter, r *http.Request, c SharedContext) {
 		return
 	}
 
-	reply, ok := c.s.LookupRoutePath(path)
+	reply, ok := sc.s.LookupRoutePath(path)
 	if !ok {
-		notFoundHandler(w, r, c)
+		notFoundHandler(w, r, sc)
 		return
 	}
 

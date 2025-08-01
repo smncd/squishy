@@ -56,6 +56,10 @@ run-linux-amd64:
 run-linux-arm64:
 	$(call run-bin,linux,arm64)
 
+.PHONY: build-docker-image
+build-docker-image:
+	docker build . -t $(NAME):$(VERSION)
+
 .PHONY: create-release
 create-release: build-all
 	glab release create v$(VERSION)

@@ -3,3 +3,6 @@ _version
 bin/
 air.log
 squishy.yaml
+result
+.direnv
+.envrc

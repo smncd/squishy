@@ -128,6 +128,6 @@ func (r *Router[C]) handlerLoggingWrapper(handler http.Handler) http.Handler {
 
 		handler.ServeHTTP(rww, req)
 
-		r.logger.Printf("%s %s %v", req.Method, req.URL.Path, rww.statusCode)
+		r.logger.Printf("| %s %s %s %v", req.Proto, req.Method, req.URL.Path, rww.statusCode)
 	})
 }

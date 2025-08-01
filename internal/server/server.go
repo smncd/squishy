@@ -55,8 +55,6 @@ func notFoundHandler(w http.ResponseWriter, req *http.Request, ctx SharedContext
 func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 	path := r.URL.Path
 
-	tmpl := template.Must(template.ParseFS(resources.TemplateFS, "templates/error.html"))
-
 	err := ctx.s.RefetchRoutes()
 	if err != nil {
 		data := resources.ErrorTemplateData{
@@ -68,7 +66,7 @@ func handler(w http.ResponseWriter, r *http.Request, ctx SharedContext) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		tmpl.Execute(w, data)
+		ctx.errorTemplate.Execute(w, data)
 		return
 	}
 

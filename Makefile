@@ -2,6 +2,7 @@ NAME := squishy
 VERSION := $(shell cat .version)
 GOPATH := $(shell go env GOPATH)
 LDFLAGS := "-w -s -X main.Version=$(VERSION)"
+GLAB_REG := registry.gitlab.com/smncd/squishy
 
 define build-bin
 	$(info Building $(NAME) v$(VERSION) with arch $1 for $2)
@@ -58,8 +59,10 @@ run-linux-arm64:
 
 .PHONY: build-docker-image
 publish-docker-image:
-	docker build --platform linux/amd64,linux/arm64 . -t registry.gitlab.com/smncd/squishy:$(VERSION)
-	docker push registry.gitlab.com/smncd/squishy:$(VERSION)
+	docker build --platform linux/amd64,linux/arm64 . -t $(GLAB_REG):$(VERSION)
+	docker tag $(GLAB_REG):$(VERSION) $(GLAB_REG):latest
+	docker push $(GLAB_REG):$(VERSION)
+	docker push $(GLAB_REG):latest
 
 .PHONY: create-release
 create-release: build-all

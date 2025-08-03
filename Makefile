@@ -57,8 +57,9 @@ run-linux-arm64:
 	$(call run-bin,linux,arm64)
 
 .PHONY: build-docker-image
-build-docker-image:
-	docker build . -t $(NAME):$(VERSION)
+publish-docker-image:
+	docker build --platform linux/amd64,linux/arm64 . -t registry.gitlab.com/smncd/squishy:$(VERSION)
+	docker push registry.gitlab.com/smncd/squishy
 
 .PHONY: create-release
 create-release: build-all

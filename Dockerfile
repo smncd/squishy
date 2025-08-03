@@ -1,10 +1,19 @@
-FROM golang:bullseye AS builder
+FROM --platform=$BUILDPLATFORM golang:bullseye AS builder
 
-COPY . /code
+ARG TARGETOS
+
+ARG TARGETARCH
 
 WORKDIR /code
 
-RUN make build-linux-amd64
+COPY go.mod go.sum /code/
+
+RUN go mod download
+
+COPY . .
+
+RUN make build-${TARGETOS}-${TARGETARCH}
+
 
 FROM alpine:3.22
 

@@ -31,10 +31,10 @@ You can get started with a simple docker compose file:
 services:
   squishy:
     image: registry.gitlab.com/smncd/squishy:latest
-	ports:
-	  - 1394:1394
-	volumes:
-	  - ./squishy.yaml:/squishy.yaml
+    ports:
+      - 1394:1394
+    volumes:
+      - ./squishy.yaml:/squishy.yaml
 ```
 
 **Note**: You need to set the `config.host` option to `0.0.0.0` when running Squishy in Docker.

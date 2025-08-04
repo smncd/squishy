@@ -3,7 +3,7 @@ Squishy 🧽
 
 Squishy is a lightweight link proxy/shortener, configured through a single yaml file. 
 
-It's intended for simple scenarios as it can (for now) only be configured by editing the config file on the server, and is not suited for multi-user setups.
+It's intended for simple scenarios as it can (for now) only be configured by editing the config file directly on the server, and is not suited for multi-user setups.
 
 Installation
 -------------
@@ -14,13 +14,13 @@ You can obtain the standalone binary on the [releases page](https://gitlab.com/s
 
 Simply move this to the location of your choice and make sure it's executable:
 ```bash
-curl -LO https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.5/downloads/squishy-linux-arm64-0.4.0-dev.5
-chmod +x ./squishy-linux-arm64-0.4.0-dev.5
+curl -LO https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.6/downloads/squishy-linux-arm64-0.4.0-dev.-6-fix
+chmod +x ./squishy-linux-arm64-0.4.0-dev.6-fix
 ```
 
 Binaries are available for:
-- [`linux-amd64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.5/downloads/squishy-linux-amd64-0.4.0-dev.5)
-- [`linux-arm64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.5/downloads/squishy-linux-arm64-0.4.0-dev.5)
+- [`linux-amd64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.6/downloads/squishy-linux-amd64-0.4.0-dev.6-fix)
+- [`linux-arm64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.6/downloads/squishy-linux-arm64-0.4.0-dev.6-fix)
 
 Configuration
 -------------

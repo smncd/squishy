@@ -15,6 +15,7 @@ import (
 type meta struct {
 	filePath     string    `validate:"required"`
 	modifiedTime time.Time `validate:"required"`
+	logger       *log.Logger
 }
 
 type config struct {
@@ -41,12 +42,20 @@ func (s *SquishyFile) SetFilePath(filePath string) bool {
 	return true
 }
 
+func (s *SquishyFile) SetLogger(logger *log.Logger) {
+	s.meta.logger = logger
+}
+
 // Loads SquishyFile from filesystem
 func (s *SquishyFile) Load() error {
 	s.Config = config{
 		Debug: false,
 		Host:  "localhost",
 		Port:  "1394",
+	}
+
+	if s.meta.logger == nil {
+		s.meta.logger = log.New(os.Stderr, "", 0)
 	}
 
 	err := loadFromFile(s.meta.filePath, &s)
@@ -107,7 +116,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 
 	if updated {
 		var newData SquishyFile
-		log.Println("squishyfile has new mod time, loading again...")
+		s.meta.logger.Println("squishyfile has new mod time, loading again...")
 
 		err := loadFromFile(s.meta.filePath, &newData)
 		if err != nil {
@@ -125,7 +134,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 	return nil
 }
 
-func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, bool) {
+func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, error) {
 	indexKey := "_index"
 	var keys []string
 
@@ -146,19 +155,19 @@ func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, bool) {
 	for i, key := range keys {
 		currentLevel, ok := result.(map[string]any)
 		if !ok {
-			return "", false
+			return "", errors.New("result is not of type map[string]any")
 		}
 
 		result, ok = currentLevel[key]
 		if !ok {
-			return "", false
+			return "", fmt.Errorf("key %s not found", key)
 		}
 
 		if i == len(keys)-1 {
 			if level, ok := result.(map[string]any); ok {
 				result, ok = level[indexKey]
 				if !ok {
-					return "", false
+					return "", fmt.Errorf("key %s not found", indexKey)
 				}
 			}
 
@@ -168,10 +177,10 @@ func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, bool) {
 
 	reply, ok := result.(string)
 	if !ok {
-		return "", false
+		return "", errors.New("result is not string")
 	}
 
-	return reply, true
+	return reply, nil
 
 }
 

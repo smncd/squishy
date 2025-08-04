@@ -43,7 +43,7 @@ func New(s *filesystem.SquishyFile) *http.Server {
 			return
 		}
 
-		reply, ok := s.LookupRoutePath(path)
+		reply, ok := s.LookupRouteUrlFromPath(path)
 		if !ok {
 			c.HTML(http.StatusNotFound, "error.html", templates.ErrorPageData{
 				Title:       "Not Found",

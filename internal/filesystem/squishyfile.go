@@ -125,7 +125,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 	return nil
 }
 
-func (s *SquishyFile) LookupRoutePath(path string) (string, bool) {
+func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, bool) {
 	indexKey := "_index"
 	var keys []string
 

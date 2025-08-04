@@ -65,6 +65,25 @@ routes:
     there: https://example3.com # /hello/there redirects to https://example3.com
 ```
 
+### Wildcard routes
+
+Route targets can contain a wildcard indicator: `/*`. By configuring routes like this:
+```yaml
+# ...
+routes:
+  example: https://example.com/* # <-- wildcard
+
+```
+
+Squishy will redirect like:
+| Squishy path 				| Target   			                   |
+| ---		   				| ---    			                   |
+| `/example`   				| `https://example.com`                |
+| `/example/sub-path` 		| `https://example.com/sub-path`	   |
+| `/example/nested/sub-path`| `https://example.com/nested/sub-path`|
+
+**Note**: Wildcard routes are currently not supported for `_index` routes.
+
 License and Ownership
 ---------------------
 

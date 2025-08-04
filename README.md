@@ -22,6 +22,40 @@ Binaries are available for:
 - [`linux-amd64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.6/downloads/squishy-linux-amd64-0.4.0-rc.1)
 - [`linux-arm64`](https://gitlab.com/smncd/squishy/-/releases/v0.4.0-dev.6/downloads/squishy-linux-arm64-0.4.0-rc.1)
 
+### Docker
+
+Docker images are available on the [Gitlab Container Registry](https://gitlab.com/smncd/squishy/container_registry).
+
+You can get started with a simple docker compose file:
+```yaml
+services:
+  squishy:
+    image: registry.gitlab.com/smncd/squishy:latest
+	ports:
+	  - 1394:1394
+	volumes:
+	  - ./squishy.yaml:/squishy.yaml
+```
+
+**Note**: You need to set the `config.host` option to `0.0.0.0` when running Squishy in Docker.
+
+Then, simply start the service:
+```bash
+docker compose up -d
+```
+
+### From source
+
+You can build Squishy from this repo. You will need `git` and `go` 1.24 or higher.
+```bash
+git clone https://gitlab.com/smncd/squishy.git
+cd squishy
+go mod download
+make build-all
+```
+
+You'll find the produced binaries in `./bin`.
+
 Configuration
 -------------
 

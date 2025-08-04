@@ -134,7 +134,7 @@ func (s *SquishyFile) RefetchRoutes() error {
 	return nil
 }
 
-func (s *SquishyFile) LookupRoutePath(path string) (string, error) {
+func (s *SquishyFile) LookupRouteUrlFromPath(path string) (string, error) {
 	indexKey := "_index"
 	var keys []string
 
@@ -169,6 +169,18 @@ func (s *SquishyFile) LookupRoutePath(path string) (string, error) {
 				if !ok {
 					return "", fmt.Errorf("key %s not found", indexKey)
 				}
+			}
+		}
+
+		if url, ok := result.(string); ok && strings.HasSuffix(url, "/*") {
+			trailingKeys := keys[i+1:]
+
+			url = strings.ReplaceAll(url, "/*", "")
+
+			if len(trailingKeys) > 0 {
+				result = strings.Join(append([]string{url}, trailingKeys...), "/")
+			} else {
+				result = url
 			}
 
 			break

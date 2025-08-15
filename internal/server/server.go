@@ -7,21 +7,23 @@ import (
 	"log"
 	"net/http"
 
-	"gitlab.com/smncd/squishy/internal/filesystem"
+	"gitlab.com/smncd/squishy/internal/config"
 	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/resources"
 	"gitlab.com/smncd/squishy/internal/router"
 )
 
 type SharedContext struct {
-	s             *filesystem.SquishyFile
+	cfg           *config.Config
+	routes        *config.Routes
 	errorTemplate *template.Template
 	logger        *log.Logger
 }
 
-func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
+func New(cfg *config.Config, routes *config.Routes, logger *log.Logger) *http.Server {
 	sc := SharedContext{
-		s:             s,
+		cfg:           cfg,
+		routes:        routes,
 		errorTemplate: template.Must(template.ParseFS(resources.TemplateFS, "templates/error.html")),
 		logger:        logger,
 	}
@@ -40,7 +42,7 @@ func New(s *filesystem.SquishyFile, logger *log.Logger) *http.Server {
 	router.GET("/", handler)
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%v:%v", s.Config.Host, s.Config.Port),
+		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.Port),
 		Handler: router,
 	}
 
@@ -58,13 +60,13 @@ func notFoundHandler(w http.ResponseWriter, req *http.Request, sc SharedContext)
 func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 	path := r.URL.Path
 
-	err := sc.s.RefetchRoutes()
+	err := sc.routes.Refetch()
 	if err != nil {
 		data := resources.ErrorTemplateData{
 			Title:       "Welp, that's not good",
 			Description: "There's been an error on our end, please check back later",
 		}
-		if sc.s.Config.Debug {
+		if sc.cfg.Debug {
 			data.Error = err.Error()
 
 			logging.Debug(sc.logger, "error refetching routes: %s", err)
@@ -75,10 +77,10 @@ func handler(w http.ResponseWriter, r *http.Request, sc SharedContext) {
 		return
 	}
 
-	reply, err := sc.s.LookupRouteUrlFromPath(path)
+	reply, err := sc.routes.LookupUrlFromPath(path)
 	if err != nil {
 		notFoundHandler(w, r, sc)
-		if sc.s.Config.Debug {
+		if sc.cfg.Debug {
 			logging.Debug(sc.logger, "Route not found: %s", err)
 		}
 		return

@@ -3,12 +3,53 @@ package config
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"gopkg.in/yaml.v3"
 )
 
 type file struct {
 	Path         string `validate:"required"`
 	modifiedTime time.Time
+}
+
+func (f *file) Load(v any) error {
+	rawData, err := os.ReadFile(f.Path)
+	if err != nil {
+		return fmt.Errorf("failed to read config file (%s): %w", f.Path, err)
+	}
+
+	if err := yaml.Unmarshal(rawData, v); err != nil {
+		return fmt.Errorf("failed to unmarshal YAML config: %w", err)
+	}
+
+	val := reflect.ValueOf(v)
+
+	if val.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			return fmt.Errorf("config pointer is nil")
+		}
+		val = val.Elem()
+	}
+
+	if val.Kind() != reflect.Struct {
+		return fmt.Errorf("config must be a struct or a pointer to a struct, is: %v", val.Kind())
+	}
+
+	validate := validator.New()
+	err = validate.Struct(v)
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	err = f.StoreModTime()
+	if err != nil {
+		return fmt.Errorf("failed to store file modification time: %w", err)
+	}
+
+	return nil
 }
 
 func (f *file) GetModTime() (*time.Time, error) {

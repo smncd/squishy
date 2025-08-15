@@ -1,12 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/alexflint/go-arg"
-	"github.com/go-playground/validator/v10"
-	"gopkg.in/yaml.v3"
 )
 
 type Options struct {
@@ -41,7 +38,7 @@ func New() (*Config, error) {
 
 	parser.MustParse(args)
 
-	err = config.loadConfigFromFile()
+	err = config.file.Load(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -51,28 +48,4 @@ func New() (*Config, error) {
 	parser.MustParse(args)
 
 	return &config, nil
-}
-
-func (c *Config) loadConfigFromFile() error {
-	rawData, err := os.ReadFile(c.file.Path)
-	if err != nil {
-		return fmt.Errorf("failed to read config file (%s): %w", c.file.Path, err)
-	}
-
-	if err := yaml.Unmarshal(rawData, &c); err != nil {
-		return fmt.Errorf("failed to unmarshal YAML config: %w", err)
-	}
-
-	validate := validator.New()
-	err = validate.Struct(c)
-	if err != nil {
-		return fmt.Errorf("validation failed: %w", err)
-	}
-
-	err = c.file.StoreModTime()
-	if err != nil {
-		return fmt.Errorf("failed to store file modification time: %w", err)
-	}
-
-	return nil
 }

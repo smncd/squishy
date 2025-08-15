@@ -36,6 +36,7 @@ func main() {
 	logger.Printf("Starting Squishy v%s...", Version)
 
 	go func() {
+		logging.Info(logger, "Listening on http://%s:%v", cfg.Host, cfg.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logging.Error(logger, "listen: %s\n", err)
 			os.Exit(1)

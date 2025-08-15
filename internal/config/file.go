@@ -11,14 +11,14 @@ import (
 )
 
 type file struct {
-	path         string `validate:"required"`
+	Path         string `arg:"-C,--config-file,env:CONFIG_FILE" default:"./squishy.yaml"`
 	modifiedTime time.Time
 }
 
 func (f *file) Load(out any) error {
-	rawData, err := os.ReadFile(f.path)
+	rawData, err := os.ReadFile(f.Path)
 	if err != nil {
-		return fmt.Errorf("failed to read config file (%s): %w", f.path, err)
+		return fmt.Errorf("failed to read config file (%s): %w", f.Path, err)
 	}
 
 	if err := yaml.Unmarshal(rawData, out); err != nil {
@@ -53,7 +53,7 @@ func (f *file) Load(out any) error {
 }
 
 func (f *file) GetModTime() (*time.Time, error) {
-	fileInfo, err := os.Stat(f.path)
+	fileInfo, err := os.Stat(f.Path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}

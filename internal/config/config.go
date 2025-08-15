@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/alexflint/go-arg"
+	"gitlab.com/smncd/squishy/internal/logging"
 )
 
 type Options struct {
@@ -24,9 +25,6 @@ func New(logger *log.Logger) (*Config, error) {
 	args := os.Args[1:]
 
 	config := Config{
-		file: file{
-			path: "squishy.yaml",
-		},
 		Options: Options{
 			Debug: false,
 			Host:  "localhost",
@@ -42,6 +40,7 @@ func New(logger *log.Logger) (*Config, error) {
 
 	parser.MustParse(args)
 
+	logging.Info(logger, "Loading config file with path: %s", config.file.Path)
 	err = config.file.Load(&config)
 	if err != nil {
 		return nil, err

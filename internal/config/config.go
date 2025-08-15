@@ -24,9 +24,6 @@ func New(logger *log.Logger) (*Config, error) {
 	args := os.Args[1:]
 
 	config := Config{
-		file: file{
-			path: "squishy.yaml",
-		},
 		Options: Options{
 			Debug: false,
 			Host:  "localhost",

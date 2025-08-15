@@ -3,11 +3,13 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 )
 
 type Routes struct {
 	file   file
+	logger *log.Logger
 	Routes map[string]any `yaml:"routes" json:"routes" validate:"required"`
 }
 
@@ -28,8 +30,7 @@ func (r *Routes) Refetch() error {
 
 	if updated {
 		var newData Routes
-		// TODO: reimplement logger
-		// r.meta.logger.Println("config file has new mod time, loading routes again...")
+		r.logger.Println("config file has new mod time, loading routes again...")
 
 		err := r.file.Load(&newData)
 		if err != nil {

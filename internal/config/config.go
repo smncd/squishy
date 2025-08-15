@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/alexflint/go-arg"
@@ -16,9 +17,10 @@ type Options struct {
 type Config struct {
 	file
 	Options `yaml:"config" json:"config"`
+	logger  *log.Logger
 }
 
-func New() (*Config, error) {
+func New(logger *log.Logger) (*Config, error) {
 	args := os.Args[1:]
 
 	config := Config{
@@ -30,6 +32,7 @@ func New() (*Config, error) {
 			Host:  "localhost",
 			Port:  1394,
 		},
+		logger: logger,
 	}
 
 	parser, err := arg.NewParser(arg.Config{EnvPrefix: "SQUISHY_"}, &config)
@@ -52,7 +55,10 @@ func New() (*Config, error) {
 }
 
 func (cfg *Config) Routes() (*Routes, error) {
-	routes := &Routes{file: cfg.file}
+	routes := &Routes{
+		file:   cfg.file,
+		logger: cfg.logger,
+	}
 
 	err := routes.Load()
 	if err != nil {

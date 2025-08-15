@@ -19,7 +19,7 @@ var Version string
 func main() {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
 
-	cfg, err := config.New()
+	cfg, err := config.New(logger)
 	if err != nil {
 		logging.Error(logger, "Error loading config: %v", err)
 		os.Exit(1)

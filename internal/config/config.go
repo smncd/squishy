@@ -23,7 +23,7 @@ func New() (*Config, error) {
 
 	config := Config{
 		file: file{
-			Path: "squishy.yaml",
+			path: "squishy.yaml",
 		},
 		Options: Options{
 			Debug: false,

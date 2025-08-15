@@ -11,14 +11,14 @@ import (
 )
 
 type file struct {
-	Path         string `validate:"required"`
+	path         string `validate:"required"`
 	modifiedTime time.Time
 }
 
 func (f *file) Load(out any) error {
-	rawData, err := os.ReadFile(f.Path)
+	rawData, err := os.ReadFile(f.path)
 	if err != nil {
-		return fmt.Errorf("failed to read config file (%s): %w", f.Path, err)
+		return fmt.Errorf("failed to read config file (%s): %w", f.path, err)
 	}
 
 	if err := yaml.Unmarshal(rawData, out); err != nil {
@@ -53,7 +53,7 @@ func (f *file) Load(out any) error {
 }
 
 func (f *file) GetModTime() (*time.Time, error) {
-	fileInfo, err := os.Stat(f.Path)
+	fileInfo, err := os.Stat(f.path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}

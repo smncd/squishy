@@ -10,7 +10,7 @@ import (
 type Routes struct {
 	file   file
 	logger *log.Logger
-	Routes map[string]any `yaml:"routes" json:"routes" validate:"required"`
+	Routes map[string]any `yaml:"routes" json:"routes" toml:"routes" validate:"required"`
 }
 
 func (r *Routes) Load() error {

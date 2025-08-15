@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/alexflint/go-arg"
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,6 +16,7 @@ type Options struct {
 }
 
 type Config struct {
+	file
 	Options `yaml:"config" json:"config"`
 }
 
@@ -22,6 +24,9 @@ func New() (*Config, error) {
 	args := os.Args[1:]
 
 	config := Config{
+		file: file{
+			Path: "squishy.yaml",
+		},
 		Options: Options{
 			Debug: false,
 			Host:  "localhost",
@@ -49,15 +54,24 @@ func New() (*Config, error) {
 }
 
 func (c *Config) loadConfigFromFile() error {
-	filePath := "squishy.yaml"
-
-	rawData, err := os.ReadFile(filePath)
+	rawData, err := os.ReadFile(c.file.Path)
 	if err != nil {
-		return fmt.Errorf("failed to read config file (%s): %w", filePath, err)
+		return fmt.Errorf("failed to read config file (%s): %w", c.file.Path, err)
 	}
 
 	if err := yaml.Unmarshal(rawData, &c); err != nil {
 		return fmt.Errorf("failed to unmarshal YAML config: %w", err)
+	}
+
+	validate := validator.New()
+	err = validate.Struct(c)
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	err = c.file.StoreModTime()
+	if err != nil {
+		return fmt.Errorf("failed to store file modification time: %w", err)
 	}
 
 	return nil

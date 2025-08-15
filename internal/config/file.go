@@ -15,17 +15,17 @@ type file struct {
 	modifiedTime time.Time
 }
 
-func (f *file) Load(v any) error {
+func (f *file) Load(out any) error {
 	rawData, err := os.ReadFile(f.Path)
 	if err != nil {
 		return fmt.Errorf("failed to read config file (%s): %w", f.Path, err)
 	}
 
-	if err := yaml.Unmarshal(rawData, v); err != nil {
+	if err := yaml.Unmarshal(rawData, out); err != nil {
 		return fmt.Errorf("failed to unmarshal YAML config: %w", err)
 	}
 
-	val := reflect.ValueOf(v)
+	val := reflect.ValueOf(out)
 
 	if val.Kind() == reflect.Ptr {
 		if val.IsNil() {
@@ -39,7 +39,7 @@ func (f *file) Load(v any) error {
 	}
 
 	validate := validator.New()
-	err = validate.Struct(v)
+	err = validate.Struct(out)
 	if err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}

@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"gitlab.com/smncd/squishy/internal/config"
 	"gitlab.com/smncd/squishy/internal/filesystem"
 	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/server"
@@ -18,11 +19,20 @@ var Version string
 
 func main() {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
+
+	cfg, err := config.New()
+	if err != nil {
+		logging.Error(logger, "Error loading config: %v", err)
+		os.Exit(1)
+	}
+
+	logging.Info(logger, "%t", cfg)
+
+	os.Exit(0)
+
 	s := &filesystem.SquishyFile{}
 
-	s.SetFilePath("squishy.yaml")
-
-	err := s.Load()
+	err = s.Load()
 	if err != nil {
 		logging.Error(logger, "Error loading config: %v", err)
 		os.Exit(1)

@@ -1,6 +1,11 @@
 package logging
 
-import "log"
+import (
+	"fmt"
+	"log"
+	"path/filepath"
+	"runtime"
+)
 
 // Sets logger in "info" mode for one print operation.
 func Info(logger *log.Logger, format string, v ...any) {
@@ -18,6 +23,28 @@ func Error(logger *log.Logger, format string, v ...any) {
 }
 
 func printfWith(logger *log.Logger, prefix string, flags int, format string, v ...any) {
+	if flags&log.Lshortfile != 0 || flags&log.Llongfile != 0 {
+		_, file, line, ok := runtime.Caller(2)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		if flags&log.Lshortfile != 0 {
+			flags &^= log.Lshortfile
+			file = filepath.Base(file)
+
+		} else if flags&log.Llongfile != 0 {
+			flags &^= log.Llongfile
+			f, err := filepath.Abs(file)
+			if err == nil {
+				file = f
+			}
+		}
+
+		format = fmt.Sprintf("%s:%d: %s", file, line, format)
+
+	}
+
 	orgPrefix := logger.Prefix()
 	orgFlags := logger.Flags()
 

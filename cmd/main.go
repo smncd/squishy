@@ -28,6 +28,16 @@ func main() {
 
 	logging.Info(logger, "%t", cfg)
 
+	logger.Println()
+
+	routes, err := cfg.Routes()
+	if err != nil {
+		logging.Error(logger, "Error loading routes: %v", err)
+		os.Exit(2)
+	}
+
+	logging.Info(logger, "%t", routes)
+
 	os.Exit(0)
 
 	s := &filesystem.SquishyFile{}

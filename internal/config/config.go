@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/alexflint/go-arg"
@@ -48,4 +49,15 @@ func New() (*Config, error) {
 	parser.MustParse(args)
 
 	return &config, nil
+}
+
+func (cfg *Config) Routes() (*routes, error) {
+	routes := &routes{file: cfg.file}
+
+	err := routes.Load()
+	if err != nil {
+		return nil, fmt.Errorf("error loading routes: %w", err)
+	}
+
+	return routes, nil
 }

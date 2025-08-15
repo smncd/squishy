@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-type routes struct {
+type Routes struct {
 	file   file
 	Routes map[string]any `yaml:"routes" json:"routes" validate:"required"`
 }
 
-func (r *routes) Load() error {
+func (r *Routes) Load() error {
 	err := r.file.Load(r)
 	if err != nil {
 		return err
@@ -20,14 +20,14 @@ func (r *routes) Load() error {
 	return nil
 }
 
-func (r *routes) Refetch() error {
+func (r *Routes) Refetch() error {
 	updated, err := r.file.UpdatedSinceLastLoad()
 	if err != nil {
 		return fmt.Errorf("failed to check if file was updated since last load: %w", err)
 	}
 
 	if updated {
-		var newData routes
+		var newData Routes
 		// TODO: reimplement logger
 		// r.meta.logger.Println("config file has new mod time, loading routes again...")
 
@@ -47,7 +47,7 @@ func (r *routes) Refetch() error {
 	return nil
 }
 
-func (r *routes) LookupUrlFromPath(path string) (string, error) {
+func (r *Routes) LookupUrlFromPath(path string) (string, error) {
 	indexKey := "_index"
 	var keys []string
 

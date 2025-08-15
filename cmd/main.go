@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"gitlab.com/smncd/squishy/internal/config"
-	"gitlab.com/smncd/squishy/internal/filesystem"
 	"gitlab.com/smncd/squishy/internal/logging"
 	"gitlab.com/smncd/squishy/internal/server"
 )
@@ -26,29 +25,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	logging.Info(logger, "%t", cfg)
-
-	logger.Println()
-
 	routes, err := cfg.Routes()
 	if err != nil {
 		logging.Error(logger, "Error loading routes: %v", err)
 		os.Exit(2)
 	}
 
-	logging.Info(logger, "%t", routes)
-
-	os.Exit(0)
-
-	s := &filesystem.SquishyFile{}
-
-	err = s.Load()
-	if err != nil {
-		logging.Error(logger, "Error loading config: %v", err)
-		os.Exit(1)
-	}
-
-	server := server.New(s, logger)
+	server := server.New(cfg, routes, logger)
 
 	logger.Printf("Starting Squishy v%s...", Version)
 

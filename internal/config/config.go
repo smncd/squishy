@@ -51,8 +51,8 @@ func New() (*Config, error) {
 	return &config, nil
 }
 
-func (cfg *Config) Routes() (*routes, error) {
-	routes := &routes{file: cfg.file}
+func (cfg *Config) Routes() (*Routes, error) {
+	routes := &Routes{file: cfg.file}
 
 	err := routes.Load()
 	if err != nil {

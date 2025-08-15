@@ -1,11 +1,14 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 )
@@ -16,13 +19,39 @@ type file struct {
 }
 
 func (f *file) Load(out any) error {
+	ext := filepath.Ext(f.Path)
+
+	supportedExts := map[string]bool{
+		".yaml": true,
+		".yml":  true,
+		".json": true,
+		".toml": true,
+	}
+
+	if !supportedExts[ext] {
+		return fmt.Errorf("unsupported config file extension: %s", ext)
+	}
+
 	rawData, err := os.ReadFile(f.Path)
 	if err != nil {
 		return fmt.Errorf("failed to read config file (%s): %w", f.Path, err)
 	}
 
-	if err := yaml.Unmarshal(rawData, out); err != nil {
-		return fmt.Errorf("failed to unmarshal YAML config: %w", err)
+	switch ext := filepath.Ext(f.Path); ext {
+	case ".yaml", ".yml":
+		if err := yaml.Unmarshal(rawData, out); err != nil {
+			return fmt.Errorf("failed to unmarshal YAML config: %w", err)
+		}
+	case ".json":
+		if err := json.Unmarshal(rawData, out); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON config: %w", err)
+		}
+	case ".toml":
+		if _, err := toml.Decode(string(rawData), out); err != nil {
+			return fmt.Errorf("failed to unmarshal TOML config: %w", err)
+		}
+	default:
+		return fmt.Errorf("unsupported config file extension: %s", ext)
 	}
 
 	val := reflect.ValueOf(out)

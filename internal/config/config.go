@@ -10,14 +10,14 @@ import (
 )
 
 type Options struct {
-	Debug bool   `yaml:"debug" json:"debug" arg:"-D,--debug,env:DEBUG"`
-	Host  string `yaml:"host" json:"host" validate:"required" arg:"-H,--host,env:HOST"`
-	Port  int    `yaml:"port" json:"port" validate:"required" arg:"-P,--port,env:PORT"`
+	Debug bool   `yaml:"debug" json:"debug" toml:"debug" arg:"-D,--debug,env:DEBUG"`
+	Host  string `yaml:"host" json:"host" toml:"host" validate:"required" arg:"-H,--host,env:HOST"`
+	Port  int    `yaml:"port" json:"port" toml:"port" validate:"required" arg:"-P,--port,env:PORT"`
 }
 
 type Config struct {
 	file
-	Options `yaml:"config" json:"config"`
+	Options `yaml:"config" json:"config" toml:"config"`
 	logger  *log.Logger
 }
 

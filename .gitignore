@@ -1,8 +1,10 @@
 .air/
 _version
 bin/
-air.log
-squishy.yaml
-result
+result/
 .direnv
 .envrc
+air.log
+squishy.json
+squishy.toml
+squishy.yaml

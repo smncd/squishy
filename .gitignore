@@ -5,6 +5,6 @@ result/
 .direnv
 .envrc
 air.log
-squishy.json
-squishy.toml
-squishy.yaml
+/squishy.json
+/squishy.toml
+/squishy.yaml

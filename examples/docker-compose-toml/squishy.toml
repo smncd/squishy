@@ -1,0 +1,6 @@
+[config]
+port = 4321
+
+[routes]
+_index = "https://gitlab.com/smncd/squishy"
+

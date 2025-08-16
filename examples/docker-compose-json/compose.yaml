@@ -1,0 +1,10 @@
+services:
+  squishy:
+    image: registry.gitlab.com/smncd/squishy:latest
+    environment:
+        SQUISHY_CONFIG_FILE: /squishy.json
+        SQUISHY_HOST: 0.0.0.0
+    ports:
+      - 1394:8765
+    volumes:
+      - ./squishy.json:/squishy.json

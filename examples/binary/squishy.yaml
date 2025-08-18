@@ -1,0 +1,6 @@
+config:
+    debug: true
+    port: 8514
+
+routes:
+    _index: https://gitlab.com/smncd/squishy

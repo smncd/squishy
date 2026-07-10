@@ -5,8 +5,15 @@ LDFLAGS := "-w -s -X main.Version=$(VERSION)"
 GLAB_REG := registry.gitlab.com/smncd/squishy
 
 define build-bin
-	$(info Building $(NAME) v$(VERSION) with arch $1 for $2)
-	CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -v -o ./bin/$(NAME)-$(1)-$(2)-$(VERSION) -ldflags $(LDFLAGS) ./cmd/main.go
+	for binary_dir in ./cmd/*/; do \
+		binary=$$(basename "$$binary_dir"); \
+
+		echo "Building $(NAME) $$binary v$(VERSION) with GOOS=$(1) GOARCH=$(2)"; \
+		CGO_ENABLED=0 GOOS=$(1) GOARCH=$(2) go build -v \
+			-o ./bin/$(NAME)-$$binary-$(1)-$(2)-$(VERSION) \
+			-ldflags $(LDFLAGS) \
+			./cmd/$$binary/main.go; \
+	done
 endef
 
 define run-bin
